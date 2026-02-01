@@ -129,7 +129,7 @@ function itemdb.checkToken(token)
     end
 
    
-    -- itemdb.verifyToken()
+    itemdb.verifyToken(token)
     return true
 end
 
@@ -142,29 +142,25 @@ function onHttpPostDone(_, url, body)
     if not body or body == "" then
         cecho("<red>Empty response from server!\n")
         itemdb.token = nil
-        return
     end
 
     local message = parseJson(body)
 
     if message == "valid" then
         cecho("<grey>ITEM-DB:<green> Token Verified\n")
-        -- itemdb.token = token   -- if you have it in scope / pending
-        return
+        itemdb.token = token 
     else
         cecho("<gray>ITEM-DB:<red> INVALID TOKEN, server said: " .. tostring(message or "no message") .. "\n")
         itemdb.token = nil
-        return
     end
 end
 
 function onHttpPostError(_, url, errorMsg)
     cecho("<gray>ITEM-DB:<red> ERROR VERIFYING TOKEN, Please check your connection and try again " .. errorMsg)
-    return false
 end
 
-registerAnonymousEventHandler("sysPostHttpDone", onHttpPostDone)
-registerAnonymousEventHandler("sysPostHttpError", onHttpPostError)
+registerAnonymousEventHandler("sysPostHttpDone", onHttpPostDone, true)  -- adding true makes the function destroy itself once complete
+registerAnonymousEventHandler("sysPostHttpError", onHttpPostError, true)
 
 function itemdb.verifyToken(token)
     -- Making Post request to ItemDB to verify user token
@@ -206,8 +202,8 @@ function itemdb.setToken(token)
 
     
 
-    itemdb.token = token
-    itemdb.verifyToken(token)
-    -- itemdb.checkToken(token)
+    -- itemdb.token = token
+    -- itemdb.verifyToken(token)
+    itemdb.checkToken(token)
 
 end
