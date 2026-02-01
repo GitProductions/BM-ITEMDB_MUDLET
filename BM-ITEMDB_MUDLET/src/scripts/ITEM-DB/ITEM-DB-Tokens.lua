@@ -49,8 +49,8 @@ registerAnonymousEventHandler("sysPostHttpError", onHttpPostError)
 function itemdb.verifyToken(token)
     -- Making Post request to ItemDB to verify user token
     cecho("<gray>ITEM-DB:<yellow> Verifying User Auth Token... ")
-    -- local url = "https://bm-itemdb.gitago.dev/api/tokens/verify"
-    local url = "http://localhost:3000/api/tokens/verify"
+    local url = "https://bm-itemdb.gitago.dev/api/tokens/verify"
+    -- local url = "http://localhost:3000/api/tokens/verify"
     local headers = { 
         ["Content-Type"] = "application/json"
         -- ["Authorization"] = "Bearer " .. itemdb.token
