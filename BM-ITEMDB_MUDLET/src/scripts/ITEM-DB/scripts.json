@@ -16,5 +16,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB-Inventory",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

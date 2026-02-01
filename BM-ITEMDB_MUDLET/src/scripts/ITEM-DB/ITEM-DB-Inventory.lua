@@ -1,73 +1,3 @@
-## BlackMUD ItemDB Helper Package
-
-This package was designed for the players of BlackMUD to have an easy way to submit items they have identified into the community item database so that players, new and old are able to quickly look up various items stats and try and determine the high/low for various items due to them having a /random/ stat gen.
-
-This package is new and may have some issues along the way where it may not capture identifies as expected. 
-
-
-### Installing
-Inside of mudlet in the console you can copy/paste this command directly and it will automatically install the package
-
-`lua installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")`
-
-### On First Startup
-
-Before you can submit items to the database you will need to create an account via [BlackMUD ItemDB](https://bm-itemdb.gitago.dev/account)
-
-Sign up for an account you can then create an API token which can be used to set up the package.
-
-![Example API Token Request](image.png)
-
-Once you acquire the token from the ItemDB you can hop in Mudlet and type in the command as seen below.
-Be sure you are replacing `<TOKEN>` with your actual token from the website.
-
-> `itemdb.set <TOKEN>`
-
-
-### Whats next?
-
-After thats done, you should have a confirmation message shown and you can begin sending items to the database now directly from Mudlet.. 
-
-You can test it by reciting an identify and await for it to capture. 
-You will be prompted with a clickable button/text that will open your inventory. 
-
-When it opens your inventory its going to attach a link to the end of each line.
-You will then click the item you just identified and this is how we are capturing the short-description of the item.
-
-After that the submission is complete and you should be able to find it via the website.
-
-
----
-
-
-### Having issues?
-
-Reboot Mudlet, try again!  
-
-If that doesn't work or you have other techincal issues please reach out to Gitago via the discord.
-
-
-
-
-
-### Developing
-
-`docker run --pull always --rm -it -v "${PWD}:/workspace" -w /workspace demonnic/muddler`cd 
-
-
-
-
-
-
-<!-- Need to figure out how to create a proper geyser window that can capture iventory data...
-
-sample one liner works fine.. 
-
-and a fairly simple plain window works fine too..
-
-
-///
-
 inventory = inventory or {}
 
 -- Sample in game inventory
@@ -102,6 +32,15 @@ inventory.capture = inventory.capture or {
     active = false,
     lines  = {},
 }
+
+-- ------------------------------------------------------------
+-- HELPER: Detect if a line is a prompt
+-- Matches pattern like "< 597 465 108 >"
+-- ------------------------------------------------------------
+-- local function isPrompt(text)
+--     local trimmed = text:gsub("^%s+", ""):gsub("%s+$", "")
+--     return trimmed:match("^<") and trimmed:match("%d") and trimmed:match(">$")
+-- end
 
 -- ------------------------------------------------------------
 -- PARSER
@@ -158,59 +97,128 @@ function inventory.parseLine(line)
 end
 
 -- ------------------------------------------------------------
--- TRIGGER SCRIPT — this is what runs on every line while the
--- trigger is open. Uses the exact pattern from the working
--- multi-line inventory example on the Mudlet blog.
+-- TRIGGER SCRIPT
+-- The actual trigger handler is in triggers/ITEM-DB/Inventory-Capture.lua
+-- Note: Trigger "Inventory Capture" is defined in triggers.json
+-- It fires on "You are carrying:" and calls inventory.onInventoryLine()
 -- ------------------------------------------------------------
+
+
+-- Inventory Capture trigger handlers
+
+-- Inventory capture functions for the trigger system
+function inventory.startCapture()
+    cecho("<yellow>[Inventory] Starting capture...\n")
+    inventory.capture.active = true
+    inventory.capture.lines  = {}
+    setTriggerStayOpen("Inventory Capture", 99)
+end
+
 function inventory.onInventoryLine()
-    local firelen = 1  -- default: keep trigger open for 1 more line
+    cecho("onInventoryLine calleed!")
+    if not inventory.capture.active then
+        return
+    end
+    
+    local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
+    
+    -- Skip the header line and blank lines
+    if trimmed == "" or trimmed == "You are carrying:" then
+        return
+    end
+    
+    cecho("<cyan>[Capture] " .. line .. "\n")
+    table.insert(inventory.capture.lines, line)
 
-    if line == "You are carrying:" then
-        -- header line — start fresh
-        inventory.capture.active = true
-        inventory.capture.lines  = {}
+    cecho("Is it a prompt?" .. isPrompt())
+    setTriggerStayOpen("Inventory Capture", 1)
+end
 
-    elseif line == "" or isPrompt() then
-        -- blank line or prompt = end of inventory block
-        firelen = 0  -- close the trigger
+function inventory.endCapture()
+    if not inventory.capture.active then
+        return
+    end
+    
+    cecho("<yellow>[Inventory] Ending capture - processing " .. #inventory.capture.lines .. " lines\n")
+    setTriggerStayOpen("Inventory Capture", 0)
+    inventory.capture.active = false
 
-        if inventory.capture.active then
-            inventory.capture.active = false
-
-            -- parse everything we collected
-            local items = {}
-            for _, l in ipairs(inventory.capture.lines) do
-                local parsed = inventory.parseLine(l)
-                if parsed then
-                    table.insert(items, parsed)
-                end
-            end
-
-            inventory.capture.lines = {}
-
-            if #items > 0 then
-                inventory.setData(items)
-            end
-        end
-
-    else
-        -- a content line while capture is active — grab it
-        if inventory.capture.active then
-            table.insert(inventory.capture.lines, line)
+    -- parse everything we collected
+    local items = {}
+    for _, l in ipairs(inventory.capture.lines) do
+        local parsed = inventory.parseLine(l)
+        if parsed then
+            cecho("<green>[Parsed] " .. parsed.name .. " x" .. parsed.quantity .. " (" .. (parsed.condition or "?") .. ")\n")
+            table.insert(items, parsed)
         end
     end
 
-    setTriggerStayOpen("Inventory Capture", firelen)
+    inventory.capture.lines = {}
+
+    if #items > 0 then
+        cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
+        inventory.setData(items)
+    else
+        cecho("<orange>[Inventory] No items parsed!\n")
+    end
 end
 
--- ------------------------------------------------------------
--- CREATE THE TRIGGER — fires on "You are carrying:" and stays
--- open via setTriggerStayOpen until we close it
--- ------------------------------------------------------------
-if not exists("Inventory Capture", "trigger") then
-    permTrigger("Inventory Capture", "Inventory", "You are carrying:", [[inventory.onInventoryLine()]])
-end
-enableTrigger("Inventory Capture")
+
+-- -- Inventory capture functions for the trigger system
+-- function inventory.startCapture()
+--     cecho("<yellow>[Inventory] Starting capture...\n")
+--     inventory.capture.active = true
+--     inventory.capture.lines  = {}
+--     setTriggerStayOpen("Inventory Capture", 99)
+-- end
+
+-- function inventory.onInventoryLine()
+--     if not inventory.capture.active then
+--         return
+--     end
+    
+--     local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
+    
+--     -- Skip the header line and blank lines
+--     if trimmed == "" or trimmed == "You are carrying:" then
+--         return
+--     end
+    
+--     cecho("<cyan>[Capture] " .. line .. "\n")
+--     table.insert(inventory.capture.lines, line)
+--     setTriggerStayOpen("Inventory Capture", 1)
+-- end
+
+-- function inventory.endCapture()
+--     if not inventory.capture.active then
+--         return
+--     end
+    
+--     cecho("<yellow>[Inventory] Ending capture - processing " .. #inventory.capture.lines .. " lines\n")
+--     setTriggerStayOpen("Inventory Capture", 0)
+--     inventory.capture.active = false
+
+--     -- parse everything we collected
+--     local items = {}
+--     for _, l in ipairs(inventory.capture.lines) do
+--         local parsed = inventory.parseLine(l)
+--         if parsed then
+--             cecho("<green>[Parsed] " .. parsed.name .. " x" .. parsed.quantity .. " (" .. (parsed.condition or "?") .. ")\n")
+--             table.insert(items, parsed)
+--         end
+--     end
+
+--     inventory.capture.lines = {}
+
+--     if #items > 0 then
+--         cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
+--         inventory.setData(items)
+--     else
+--         cecho("<orange>[Inventory] No items parsed!\n")
+--     end
+-- end
+
+-- TRIGGER SCRIPT
 
 -- ------------------------------------------------------------
 -- Adjustable.Container
@@ -269,7 +277,7 @@ local function buildRows()
             padding-left: 12px;
         ]])
 
-        inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load inventory</span>')
+        inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load the inventory</span>')
         return
     end
 
@@ -336,7 +344,3 @@ end
 -- INITIAL BUILD
 -- ------------------------------------------------------------
 buildRows()
-///
-
-
- -->
