@@ -68,6 +68,31 @@ lua cecho(tostring(#inventory.data))
 lua for i, row in ipairs(inventory.rows) do cecho(i .. ": " .. row.name .. " visible=" .. tostring(row:isVisible()) .. "\n") end
 
 
+
+
+
+-- saving a table 
+
+how bmudlet does it..
+configFile = BlackMUDlet_config.lua
+packageName = BlackMUDlet
+
+- saving to it like this..
+lua table.save(BlackMUDlet.packagePath .. BlackMUDlet.configFile, BlackMUDlet.Config)
+
+- we can overwrite it with ours..
+lua table.save(BlackMUDlet.packagePath .. BlackMUDlet.configFile, itemdb)
+
+
+- we copy exactly as bmudlet and make the same paths mimicing everything.. and we cannot make it save??
+unsure what stopping us..
+lua table.save(itemdb.packagePath .. itemdb.configFile, itemdb)
+
+we have for variables
+configFile = bmud_itemdb.lua
+packageName = BM-ITEMDB
+
+
 <!-- Need to figure out how to create a proper geyser window that can capture iventory data...
 
 sample one liner works fine.. 

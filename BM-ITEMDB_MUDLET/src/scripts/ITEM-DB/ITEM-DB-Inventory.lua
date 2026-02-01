@@ -1,4 +1,8 @@
+-- inventory = itemdb.inventory or {}
 inventory = inventory or {}
+itemdb.configFile = "bmud_itemdb.lua"
+itemdb.packageName = "BM-ITEMDB"
+itemdb.packagePath = getMudletHomeDir().."/"..itemdb.packageName
 
 -- Sample in game inventory
 -- You are carrying:
@@ -428,15 +432,26 @@ function inventory.setData(newData)
     -- inventory.container:save(1)
     -- inventory.container:saveAll("default")
 
-    table.save(getMudletHomeDir().."/mytable.lua", inventory)
+    -- table.save(getMudletHomeDir().."/mytable.lua", inventory)
+    -- table.save(GetMudletHomeDir() .. "/bmud_itemdb.lua")
+    -- table.save(getMudletHomeDir() .. itemdb.configFile, itemdb)
+
+    inventory.saveData()
+
 end
 
+function inventory.saveData()
+    cecho("<yellow>Attempting a save\n")
+    if inventory.data then
+        table.save(itemdb.packagePath .. itemdb.packagePath, itemdb)
+    end
+end
 -- ------------------------------------------------------------
 -- INITIAL BUILD
 -- ------------------------------------------------------------
 
 
--- inventory.container:load(1)
+
 
 
 -- adding this and it causes it to no longer work at all???
