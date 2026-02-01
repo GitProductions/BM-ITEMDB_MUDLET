@@ -2,7 +2,10 @@
 inventory = inventory or {}
 itemdb.configFile = "bmud_itemdb.lua"
 itemdb.packageName = "BM-ITEMDB"
-itemdb.packagePath = getMudletHomeDir().."/"..itemdb.packageName
+itemdb.packagePath = getMudletHomeDir()
+
+
+local savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
 
 -- Sample in game inventory
 -- You are carrying:
@@ -428,22 +431,39 @@ function inventory.setData(newData)
     inventory.data = newData or {}
     inventory.refresh()
 
-    -- attempting to save layout etc for next boot
-    -- inventory.container:save(1)
-    -- inventory.container:saveAll("default")
+    -- saving it on every inventory trigger for now.. in future we will attach to an event..
 
-    -- table.save(getMudletHomeDir().."/mytable.lua", inventory)
-    -- table.save(GetMudletHomeDir() .. "/bmud_itemdb.lua")
-    -- table.save(getMudletHomeDir() .. itemdb.configFile, itemdb)
+    -- example
+    --- initialize BlackMUDlet and submodules
+    -- called on sysLoadEvent and sysInstall, but will only run once
+    -- function BlackMUDlet.initialize(event, name)
 
-    inventory.saveData()
+    --   if event == "sysInstall" and name ~= BlackMUDlet.packageName then return end
 
+    --   if initialized == false then
+
+    --     local path = BlackMUDlet.packagePath
+    --     local file = BlackMUDlet.configFile
+        
+    --      -- load config data
+    --     local loaded = {}
+    --     if io.exists(path .. file) then
+    --       table.load(path .. file, loaded)
+    --     end
+        
+    --     BlackMUDlet.Config = table.update(BlackMUDlet.Config, loaded or {})
+    -- ...
+    -- inventory.save()
 end
 
-function inventory.saveData()
+
+
+-- called when sysExitEvent
+function inventory.save()
     cecho("<yellow>Attempting a save\n")
     if inventory.data then
-        table.save(itemdb.packagePath .. itemdb.packagePath, itemdb)
+        cecho("<yellow>Saving to " .. savePath .. "\n")
+        table.save(savePath, inventory.data)
     end
 end
 -- ------------------------------------------------------------
@@ -451,9 +471,19 @@ end
 -- ------------------------------------------------------------
 
 
+-- called on sysLoadEvent and sysInstall, but will only run once
+function inventory.initialize()
+    table.load(savePath, inventory.data)
+    inventory.refresh() 
+end
 
 
 
--- adding this and it causes it to no longer work at all???
--- table.load(getMudletHomeDir().."/mytable.lua", inventory)
-inventory.refresh() 
+
+-- inventory.initialize()
+
+
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", inventory.initialize)
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", inventory.initialize)
+
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", inventory.save)

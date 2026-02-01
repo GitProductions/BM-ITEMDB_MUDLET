@@ -1,5 +1,8 @@
 -- Item DB - Core helpers and shared state
+
+
 itemdb = itemdb or {}
+
 
 itemdb.state = itemdb.state or {
     captureActive = false,
