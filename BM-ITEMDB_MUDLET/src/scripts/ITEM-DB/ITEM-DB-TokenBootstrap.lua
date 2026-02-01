@@ -9,7 +9,7 @@ itemdb.tokenUninstallHandlerRegistered = itemdb.tokenUninstallHandlerRegistered 
 
 local function promptForToken()
     cecho("\n<red>[ITEM DB] Authentication token is not set. Submissions will be blocked!\n")
-    cecho("<yellow>  Type <white>item-db-token YOUR_TOKEN<yellow> and press Enter to save it.\n")
+    cecho("<yellow>  Type <white>itemdb.set YOUR_TOKEN<yellow> and press Enter to save it.\n")
     cechoLink("[<cyan>Signup for Account]", [[openUrl("https://bm-itemdb.gitago.dev/account")]],
         "Account is required for Mudlet submissions]\n\n", true)
     itemdb.tokenBootPrompted = true
@@ -70,7 +70,7 @@ end
 
 local function handleUninstallEvent(...)
     cecho("<spring_green>[ITEM DB] Goodbye! The helper package has been removed.\n")
-    cecho("<spring_green>  Reinstall and run <white>item-db-token YOUR_TOKEN<spring_green> to re-enable submissions.\n")
+    cecho("<spring_green>  Reinstall and run <white>itemdb.set YOUR_TOKEN<spring_green> to re-enable submissions.\n")
     itemdb.tokenWelcomeShown = false
     itemdb.tokenBootPrompted = false
 end

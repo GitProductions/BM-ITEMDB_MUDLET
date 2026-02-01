@@ -21,7 +21,7 @@ Sign up for an account you can then create an API token which can be used to set
 Once you acquire the token from the ItemDB you can hop in Mudlet and type in the command as seen below.
 Be sure you are replacing `<TOKEN>` with your actual token from the website.
 
-> `itemdb.token <TOKEN>`
+> `itemdb.set <TOKEN>`
 
 
 ### Whats next?
@@ -40,6 +40,10 @@ After that the submission is complete and you should be able to find it via the 
 ---
 
 
-If you run into any issues along the way please reach out to Gitago via the discord.
+### Having issues?
+
+Reboot Mudlet, try again!  
+
+If that doesn't work or you have other techincal issues please reach out to Gitago via the discord.
 
 

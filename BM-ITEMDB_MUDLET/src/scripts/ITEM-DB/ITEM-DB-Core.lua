@@ -89,7 +89,7 @@ function itemdb.askUser()
         cecho("Preparing to submit item...\n")
         cecho("<yellow>Select the item from your inventory:\n\n")
 
-        itemdb.startItemSelection(15)
+        itemdb.startItemSelection(20)
         send("i")
     end, "Item-DB: Click to submit item", true)
 

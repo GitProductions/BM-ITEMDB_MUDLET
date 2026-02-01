@@ -16,7 +16,7 @@
        {
               "name": "ITEM-DB token setter",
               "isActive": "yes",
-              "regex": "^itemdb.token\\s+(.+)$",
+              "regex": "^itemdb.set\\s+(.+)$",
               "script": "",
               "isFolder": "no"
        }
