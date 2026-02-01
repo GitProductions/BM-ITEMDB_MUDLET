@@ -381,7 +381,6 @@ itemdb.inventory.data = itemdb.inventory.data or {}
 function itemdb.inventory.refresh()
     cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
  
-    
 
     if #itemdb.inventory.data == 0 then
         local placeholder = [[
@@ -396,17 +395,24 @@ function itemdb.inventory.refresh()
     for i, item in ipairs(itemdb.inventory.data) do
         local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
         
+        -- Items Quanity Styling
         local qtyStr  = (item.quantity > 1) and 
             (" <span style='color:" .. itemdb.inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
             or ""
         
+        -- Items Condition Styling
         local condStr = item.condition and 
             (" <span style='color:" .. itemdb.inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
             or ""
         
+        -- Items Short Description styling
         local descStr = item.desc and 
             (" <span style='color:" .. itemdb.inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
             or ""
+
+        -- how to make button attached to item row to allow users to click and 'look item.name'?  in future maybe we can reference the itemDB and find precise keywords for various actions and controls
+        -- attempted it but it 
+        
 
         -- Each item on its own "row" with line break + padding simulation
         text = text .. [[
@@ -428,30 +434,6 @@ end
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
     itemdb.inventory.refresh()
-
-    -- saving it on every itemdb.inventory trigger for now.. in future we will attach to an event..
-
-    -- example
-    --- initialize BlackMUDlet and submodules
-    -- called on sysLoadEvent and sysInstall, but will only run once
-    -- function BlackMUDlet.initialize(event, name)
-
-    --   if event == "sysInstall" and name ~= BlackMUDlet.packageName then return end
-
-    --   if initialized == false then
-
-    --     local path = BlackMUDlet.packagePath
-    --     local file = BlackMUDlet.configFile
-        
-    --      -- load config data
-    --     local loaded = {}
-    --     if io.exists(path .. file) then
-    --       table.load(path .. file, loaded)
-    --     end
-        
-    --     BlackMUDlet.Config = table.update(BlackMUDlet.Config, loaded or {})
-    -- ...
-    -- itemdb.inventory.save()
 end
 
 
