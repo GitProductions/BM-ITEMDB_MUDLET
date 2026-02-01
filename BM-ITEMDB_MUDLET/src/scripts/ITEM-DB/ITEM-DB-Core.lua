@@ -143,7 +143,7 @@ function itemdb.submitCapturedItem(itemLine)
         return
     end
 
-    if not itemdb.checkToken or not itemdb.checkToken() then
+    if not itemdb.checkToken or not itemdb.checkToken(itemdb.token) then
         return
     end
 
