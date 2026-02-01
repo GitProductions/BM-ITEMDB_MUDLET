@@ -148,7 +148,7 @@ function inventory.endCapture()
     for _, l in ipairs(inventory.capture.lines) do
         local parsed = inventory.parseLine(l)
         if parsed then
-            cecho("<green>[Parsed] " .. parsed.name .. " x" .. parsed.quantity .. " (" .. (parsed.condition or "?") .. ")\n")
+            -- cecho("<green>[Parsed] " .. parsed.name .. " x" .. parsed.quantity .. " (" .. (parsed.condition or "?") .. ")\n")
             table.insert(items, parsed)
         end
     end

@@ -58,6 +58,15 @@ If that doesn't work or you have other techincal issues please reach out to Gita
 
 
 
+Test add an item to inventory db 
+
+lua inventory.setData({{name = "dagger", condition = "excellent", quantity = 1, desc = nil}})
+
+Check inventory capture length
+lua cecho(tostring(#inventory.data))
+
+lua for i, row in ipairs(inventory.rows) do cecho(i .. ": " .. row.name .. " visible=" .. tostring(row:isVisible()) .. "\n") end
+
 
 <!-- Need to figure out how to create a proper geyser window that can capture iventory data...
 
