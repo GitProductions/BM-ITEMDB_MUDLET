@@ -1,0 +1,20 @@
+[
+       {
+              "name": "ITEM-DB-Tokens",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB-TokenBootstrap",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB-Core",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       }
+]
