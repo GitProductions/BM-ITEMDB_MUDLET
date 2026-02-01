@@ -3,31 +3,37 @@ itemdb = itemdb or {} -- safe creation: if already exists, keep it; else make ne
 itemdb.token = itemdb.token or "" -- default to empty string (prevents nil errors later)
 
 -- Helper function to check if token has been set at all yet..
-function itemdb.checkToken()
-    if not itemdb.token or itemdb.token == "" then
+function itemdb.checkToken(token)
+    if not token or token == "" then
         cecho("<red>[ITEM DB] ERROR: Authentication token is not set!\n")
         cecho("<yellow>     Please set it using:  item-db-token YOUR_TOKEN_HERE\n")
+       
         return false
     end
 
-    if #itemdb.token < 30 then
+    if #token < 30 then
         cecho("<orange>[ITEM DB] Warning: Token looks suspiciously short — might be invalid.\n")
+        return false
     end
 
+   
+    itemdb.verifyToken(token)
     return true
 end
 
 
 function onHttpPostDone(_, url, body)
-  cecho(string.format("<white>url: <dark_green>%s<white>, body: <dark_green>%s", url, body))
+--   cecho(string.format("<white>url: <dark_green>%s<white>, body: <dark_green>%s", url, body))
 
   if body.message ~= "valid" then
     cecho("<gray>ITEM-DB:<red> INVALID TOKEN, Please check and try again" .. body.message)
+    itemdb.token = nil
     return
   end
 
   if body.message == "valid" then
     cecho("<grey>ITEM-DB:<green>Token Verified")
+    -- itemdb.token = token
     return 
   end
 end
@@ -50,9 +56,13 @@ function itemdb.verifyToken(token)
         -- ["Authorization"] = "Bearer " .. itemdb.token
     }
 
+   
+    -- postHTTP("88fbdb54f09738aebb636834962d0c1a9693970a272ef699660300b146d9dec4", url, headers)
 
-
-    postHTTP("f970b7171a4c9d9aa125ae4fd3b31144ffab19eddbe2d175a21afbbe56d42180", url, headers)
+    -- we preset the token here, but revoke it if failed
+    itemdb.token = token
+    
+    postHTTP(token, url, headers)
 end
 
 -- Give user their token if needed for debug / etc
@@ -72,16 +82,8 @@ function itemdb.setToken(token)
 
     
 
-    -- verifytoken doesnt send a response technically.. how do we get it back from our onHttpPostDone ??? 
-    -- if itemdb.verifyToken() == true then
-    --     cecho("<gray>ITEM-DB:<green> User Auth Token Set Successfully!")
-    --     itemdb.token = token
-    --     return
-    -- end
-    itemdb.token = token
-    
-    itemdb.verifyToken(token)
-    -- cecho("<gray>ITEM-DB:<green> User Auth Token Set Successfully!")
-
+    -- itemdb.token = token
+    -- itemdb.verifyToken(token)
+    itemdb.checkToken(token)
 
 end

@@ -4,6 +4,12 @@ This package was designed for the players of BlackMUD to have an easy way to sub
 
 This package is new and may have some issues along the way where it may not capture identifies as expected. 
 
+
+### Installing
+Inside of mudlet in the console you can copy/paste this command directly and it will automatically install the package
+
+`lua installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")`
+
 ### On First Startup
 
 Before you can submit items to the database you will need to create an account via [BlackMUD ItemDB](https://bm-itemdb.gitago.dev/account)
