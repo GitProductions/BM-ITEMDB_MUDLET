@@ -34,15 +34,6 @@ inventory.capture = inventory.capture or {
 }
 
 -- ------------------------------------------------------------
--- HELPER: Detect if a line is a prompt
--- Matches pattern like "< 597 465 108 >"
--- ------------------------------------------------------------
--- local function isPrompt(text)
---     local trimmed = text:gsub("^%s+", ""):gsub("%s+$", "")
---     return trimmed:match("^<") and trimmed:match("%d") and trimmed:match(">$")
--- end
-
--- ------------------------------------------------------------
 -- PARSER
 -- Handles:
 --   a scroll of identify (excellent)
@@ -98,13 +89,9 @@ end
 
 -- ------------------------------------------------------------
 -- TRIGGER SCRIPT
--- The actual trigger handler is in triggers/ITEM-DB/Inventory-Capture.lua
--- Note: Trigger "Inventory Capture" is defined in triggers.json
+-- Note: Trigger "InventoryCapture" is defined in triggers.json
 -- It fires on "You are carrying:" and calls inventory.onInventoryLine()
 -- ------------------------------------------------------------
-
-
--- Inventory Capture trigger handlers
 
 -- Inventory capture functions for the trigger system
 function inventory.startCapture()
@@ -115,7 +102,7 @@ function inventory.startCapture()
 end
 
 function inventory.onInventoryLine()
-    cecho("onInventoryLine calleed!")
+    -- cecho("onInventoryLine calleed!")
     if not inventory.capture.active then
         return
     end
@@ -127,19 +114,26 @@ function inventory.onInventoryLine()
         return
     end
     
-    cecho("<cyan>[Capture] " .. line .. "\n")
+    -- cecho("<cyan>[Captured] " .. line .. "\n")
+    cecho("<cyan>[Captured]\n")
     table.insert(inventory.capture.lines, line)
 
-    cecho("Is it a prompt?" .. isPrompt())
+    -- cecho("Is it a prompt?" .. isPrompt())
+
+    -- cecho("<red>CAPTURED LINE: ")
     setTriggerStayOpen("Inventory Capture", 1)
 end
 
 function inventory.endCapture()
     if not inventory.capture.active then
+        cecho("<red> capture not active\n")
         return
     end
     
-    cecho("<yellow>[Inventory] Ending capture - processing " .. #inventory.capture.lines .. " lines\n")
+    if inventory.debug then
+        cecho("<yellow>[Inventory] Ending capture - processing " .. #inventory.capture.lines .. " lines\n")
+    end
+
     setTriggerStayOpen("Inventory Capture", 0)
     inventory.capture.active = false
 
@@ -153,75 +147,178 @@ function inventory.endCapture()
         end
     end
 
+
+  
+
     inventory.capture.lines = {}
 
     if #items > 0 then
         cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
+        cecho("Items are ")
         inventory.setData(items)
+
+        
     else
         cecho("<orange>[Inventory] No items parsed!\n")
     end
 end
 
 
--- -- Inventory capture functions for the trigger system
--- function inventory.startCapture()
---     cecho("<yellow>[Inventory] Starting capture...\n")
---     inventory.capture.active = true
---     inventory.capture.lines  = {}
---     setTriggerStayOpen("Inventory Capture", 99)
--- end
 
--- function inventory.onInventoryLine()
---     if not inventory.capture.active then
---         return
---     end
-    
---     local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
-    
---     -- Skip the header line and blank lines
---     if trimmed == "" or trimmed == "You are carrying:" then
---         return
---     end
-    
---     cecho("<cyan>[Capture] " .. line .. "\n")
---     table.insert(inventory.capture.lines, line)
---     setTriggerStayOpen("Inventory Capture", 1)
--- end
+function inventory.setData(newData)
+    inventory.data = newData or {}
+    inventory.refresh()
+end
 
--- function inventory.endCapture()
---     if not inventory.capture.active then
---         return
---     end
-    
---     cecho("<yellow>[Inventory] Ending capture - processing " .. #inventory.capture.lines .. " lines\n")
---     setTriggerStayOpen("Inventory Capture", 0)
---     inventory.capture.active = false
 
---     -- parse everything we collected
---     local items = {}
---     for _, l in ipairs(inventory.capture.lines) do
---         local parsed = inventory.parseLine(l)
---         if parsed then
---             cecho("<green>[Parsed] " .. parsed.name .. " x" .. parsed.quantity .. " (" .. (parsed.condition or "?") .. ")\n")
---             table.insert(items, parsed)
---         end
---     end
 
---     inventory.capture.lines = {}
+function inventory.updateNow()
+    inventory.setData({})               -- clear old data + show placeholder
+    inventory.refresh()                 -- redraw immediately
+    send("inv")                           -- or whatever your inventory command is
+    -- The trigger will fire, capture fresh lines, parse, and setData() automatically
+end
 
---     if #items > 0 then
---         cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
---         inventory.setData(items)
---     else
---         cecho("<orange>[Inventory] No items parsed!\n")
---     end
--- end
 
--- TRIGGER SCRIPT
+
 
 -- ------------------------------------------------------------
 -- Adjustable.Container
+-- ------------------------------------------------------------
+
+-- inventory.container = inventory.container or Adjustable.Container:new({
+--     name          = "inventoryContainer",
+--     x             = "75%",
+--     y             = "2%",
+--     width         = "22%",
+--     height        = "35%",
+--     titleText     = "Inventory",
+--     titleTxtColor = "#c8d6e5",
+--     adjLabelstyle = [[
+--         background-color: rgb(20, 22, 28);
+--         border: 1px solid rgb(80, 90, 110);
+--         border-radius: 4px;
+--     ]],
+-- })
+
+-- inventory.container:show()
+
+-- -- ------------------------------------------------------------
+-- -- Body label
+-- -- ------------------------------------------------------------
+-- inventory.body = inventory.body or Geyser.Label:new({
+--     name   = "inventory.body",
+--     x      = 0,
+--     y      = 0,
+--     width  = "100%",
+--     height = "100%",
+-- }, inventory.container)
+
+-- inventory.body:setStyleSheet([[
+--     background-color: rgb(20, 22, 28);
+-- ]])
+
+-- -- ------------------------------------------------------------
+-- -- DATA + ROWS
+-- -- ------------------------------------------------------------
+-- inventory.data = inventory.data or {}
+-- inventory.rows = inventory.rows or {}
+
+-- local function buildRows()
+--     cecho("Clearing ROWS!")
+--     if #inventory.data == 0 then
+--         -- placeholder when empty
+--         inventory.rows[1] = Geyser.Label:new({
+--             name   = "inventory.row.empty",
+--             x      = 0,
+--             y      = 0,
+--             width  = "100%",
+--             height = "100%",
+--         }, inventory.body)
+
+--         inventory.rows[1]:setStyleSheet([[
+--             background-color: rgb(20, 22, 28);
+--             padding-left: 12px;
+--         ]])
+
+--         inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load the inventory</span>')
+--         return
+--     end
+
+--     local rowCount = #inventory.data
+--     local rowH     = math.floor(100 / rowCount)
+
+--     for i, item in ipairs(inventory.data) do
+--         local yPos  = tostring((i - 1) * rowH) .. "%"
+--         local hPos  = tostring(rowH) .. "%"
+--         local rowBg = (i % 2 == 0) and inventory.colors.bgRowAlt or inventory.colors.bgRow
+
+--         inventory.rows[i] = Geyser.Label:new({
+--             name   = "inventory.row." .. i,
+--             x      = 0,
+--             y      = yPos,
+--             width  = "100%",
+--             height = hPos,
+--         }, inventory.body)
+
+--         inventory.rows[i]:setStyleSheet([[
+--             background-color: ]] .. rowBg .. [[;
+--             border-bottom: 1px solid rgb(60, 65, 78);
+--             padding-left: 8px;
+--         ]])
+
+--         local qtyStr  = (item.quantity > 1) and (" x" .. tostring(item.quantity)) or ""
+--         local condStr = item.condition and (" (" .. item.condition .. ")") or ""
+--         local descStr = item.desc and (" - " .. item.desc) or ""
+
+--         inventory.rows[i]:echo(string.format(
+--             '<span style="color:%s; font-size:11px; font-family:sans-serif;">%s</span>'
+--             .. '<span style="color:%s; font-size:11px; font-family:monospace; font-weight:bold;">%s</span>'
+--             .. '<span style="color:%s; font-size:10px; font-family:sans-serif;">%s</span>'
+--             .. '<span style="color:%s; font-size:9px; font-family:sans-serif;">%s</span>',
+--             inventory.colors.textName,  item.name,
+--             inventory.colors.textQty,   qtyStr,
+--             inventory.colors.textCond,  condStr,
+--             inventory.colors.textDesc,  descStr
+--         ))
+--     end
+-- end
+
+-- -- ------------------------------------------------------------
+-- -- PUBLIC: refresh
+-- -- ------------------------------------------------------------
+-- function inventory.refresh()
+--     cecho("Inventory refresh triggered\n" .. tostring(#inventory.data) .. " items\n")
+--     for _, row in ipairs(inventory.rows) do
+--         cecho("Hiding the row " .. tostring(row.name) .. "\n")
+--         row:hide()
+--         Geyser.Widget.delete(row)
+--     end
+--     inventory.rows = {}
+--     cecho("Inventory Cleared!!\n")
+--     buildRows()
+-- end
+
+-- -- ------------------------------------------------------------
+-- -- PUBLIC: setData
+-- -- ------------------------------------------------------------
+-- function inventory.setData(newData)
+--     inventory.data = newData or {}
+--     inventory.refresh()
+-- end
+
+
+-- -- ------------------------------------------------------------
+-- -- INITIAL BUILD
+-- -- ------------------------------------------------------------
+-- buildRows()
+
+--  END REMOVED OLD ATTEMPTED
+
+
+
+-- ------------------------------------------------------------
+-- Inventory Window
 -- ------------------------------------------------------------
 inventory.container = inventory.container or Adjustable.Container:new({
     name          = "inventoryContainer",
@@ -236,111 +333,101 @@ inventory.container = inventory.container or Adjustable.Container:new({
         border: 1px solid rgb(80, 90, 110);
         border-radius: 4px;
     ]],
+
 })
 
 inventory.container:show()
 
+
+-- How do we put the inventory into a scroll box incase user shrinks window??
+-- inventory.scrollbox = Adjustable.ScrollBox:new({
+--     name   = "inventory.scrollbox",
+--     x      = 0,
+--     y      = 0,
+--     width  = "100%",
+--     height = "100%",
+-- }, inventory.container)
+
 -- ------------------------------------------------------------
--- Body label
+-- Single persistent content label (no dynamic rows!)
 -- ------------------------------------------------------------
-inventory.body = inventory.body or Geyser.Label:new({
-    name   = "inventory.body",
+inventory.contentLabel = inventory.contentLabel or Geyser.Label:new({
+    name   = "inventory.content",
     x      = 0,
     y      = 0,
     width  = "100%",
     height = "100%",
 }, inventory.container)
 
-inventory.body:setStyleSheet([[
+inventory.contentLabel:setStyleSheet([[
     background-color: rgb(20, 22, 28);
+    padding: 8px;
+    qproperty-alignment: 'AlignTop | AlignLeft';
 ]])
 
 -- ------------------------------------------------------------
--- DATA + ROWS
+-- DATA (keep as table for easy sorting/filtering later if needed)
 -- ------------------------------------------------------------
 inventory.data = inventory.data or {}
-inventory.rows = inventory.rows or {}
 
-local function buildRows()
+-- ------------------------------------------------------------
+-- Refresh: build ONE big formatted string and echo it
+-- ------------------------------------------------------------
+function inventory.refresh()
+    cecho("Inventory refresh triggered - " .. tostring(#inventory.data) .. " items\n")
+
     if #inventory.data == 0 then
-        -- placeholder when empty
-        inventory.rows[1] = Geyser.Label:new({
-            name   = "inventory.row.empty",
-            x      = 0,
-            y      = 0,
-            width  = "100%",
-            height = "100%",
-        }, inventory.body)
-
-        inventory.rows[1]:setStyleSheet([[
-            background-color: rgb(20, 22, 28);
-            padding-left: 12px;
-        ]])
-
-        inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load the inventory</span>')
+        local placeholder = [[
+            <span style="color:#6a7a8a; font-size:11px; font-style:italic;">
+            Type "i" to load the inventory
+            </span>]]
+        inventory.contentLabel:echo(placeholder)
         return
     end
 
-    local rowCount = #inventory.data
-    local rowH     = math.floor(100 / rowCount)
-
+    local text = ""
     for i, item in ipairs(inventory.data) do
-        local yPos  = tostring((i - 1) * rowH) .. "%"
-        local hPos  = tostring(rowH) .. "%"
         local rowBg = (i % 2 == 0) and inventory.colors.bgRowAlt or inventory.colors.bgRow
+        
+        local qtyStr  = (item.quantity > 1) and 
+            (" <span style='color:" .. inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
+            or ""
+        
+        local condStr = item.condition and 
+            (" <span style='color:" .. inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
+            or ""
+        
+        local descStr = item.desc and 
+            (" <span style='color:" .. inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
+            or ""
 
-        inventory.rows[i] = Geyser.Label:new({
-            name   = "inventory.row." .. i,
-            x      = 0,
-            y      = yPos,
-            width  = "100%",
-            height = hPos,
-        }, inventory.body)
-
-        inventory.rows[i]:setStyleSheet([[
-            background-color: ]] .. rowBg .. [[;
-            border-bottom: 1px solid rgb(60, 65, 78);
-            padding-left: 8px;
-        ]])
-
-        local qtyStr  = (item.quantity > 1) and (" x" .. tostring(item.quantity)) or ""
-        local condStr = item.condition and (" (" .. item.condition .. ")") or ""
-        local descStr = item.desc and (" - " .. item.desc) or ""
-
-        inventory.rows[i]:echo(string.format(
-            '<span style="color:%s; font-size:11px; font-family:sans-serif;">%s</span>'
-            .. '<span style="color:%s; font-size:11px; font-family:monospace; font-weight:bold;">%s</span>'
-            .. '<span style="color:%s; font-size:10px; font-family:sans-serif;">%s</span>'
-            .. '<span style="color:%s; font-size:9px; font-family:sans-serif;">%s</span>',
-            inventory.colors.textName,  item.name,
-            inventory.colors.textQty,   qtyStr,
-            inventory.colors.textCond,  condStr,
-            inventory.colors.textDesc,  descStr
-        ))
+        -- Each item on its own "row" with line break + padding simulation
+        text = text .. [[
+            <div style="background-color:]] .. rowBg .. [[; padding: 4px 8px; border-bottom: 1px solid rgb(60,65,78); margin: 0; line-height: 1.4;">
+            <span style="color:]] .. inventory.colors.textName .. [[; font-size:11px; font-family:sans-serif;">]] .. item.name .. [[</span>]] ..
+            qtyStr .. condStr .. descStr .. [[
+            </div>]]
     end
+
+    -- Wrap everything in a container for better spacing
+    text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
+
+    inventory.contentLabel:echo(text)
 end
 
 -- ------------------------------------------------------------
--- PUBLIC: refresh
--- ------------------------------------------------------------
-function inventory.refresh()
-    for _, row in ipairs(inventory.rows) do
-        row:hide()
-        Geyser.Widget.delete(row)
-    end
-    inventory.rows = {}
-    buildRows()
-end
-
--- ------------------------------------------------------------
--- PUBLIC: setData
+-- setData (unchanged, but calls refresh)
 -- ------------------------------------------------------------
 function inventory.setData(newData)
     inventory.data = newData or {}
     inventory.refresh()
+
+    inventory.container:save(1)
 end
 
 -- ------------------------------------------------------------
 -- INITIAL BUILD
 -- ------------------------------------------------------------
-buildRows()
+
+inventory.container:load(1)
+inventory.refresh()  -- show placeholder or last data
