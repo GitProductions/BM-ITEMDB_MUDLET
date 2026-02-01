@@ -102,7 +102,7 @@
               "script": ""
        },
        {
-              "name": "Inventory Capture",
+              "name": "InventoryCapture",
               "isActive": "yes",
               "isFolder": "no",
               "multiline": "no",
@@ -119,7 +119,6 @@
                             "type": "regex"
                      }
               ],
-              "script": "inventory.startCapture()",
               "children": [
                      {
                             "name": "InventoryCaptureLine",
@@ -138,8 +137,7 @@
                                           "pattern": "^(.+)$",
                                           "type": "regex"
                                    }
-                            ],
-                            "script": "inventory.onInventoryLine()"
+                            ]
                      },
                      {
                             "name": "InventoryEndPrompt",
@@ -159,8 +157,8 @@
                                           "pattern": "^\\s*\u003c\\s*\\d+\\s+\\d+\\s+\\d+\\s*\u003e\\s*$",
                                           "type": "regex"
                                    }
-                            ],
-                            "script": "inventory.endCapture()"
+                            ]
+                           
                      }
               ]
        }
