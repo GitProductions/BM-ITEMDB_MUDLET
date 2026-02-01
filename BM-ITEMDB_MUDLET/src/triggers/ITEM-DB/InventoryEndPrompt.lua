@@ -1,1 +1,1 @@
-inventory.endCapture()
+itemdb.inventory.endCapture()

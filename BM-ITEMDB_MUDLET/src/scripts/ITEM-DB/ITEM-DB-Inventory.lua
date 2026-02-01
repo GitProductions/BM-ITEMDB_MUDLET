@@ -1,13 +1,11 @@
--- inventory = itemdb.inventory or {}
-inventory = inventory or {}
-itemdb.configFile = "bmud_itemdb.lua"
-itemdb.packageName = "BM-ITEMDB"
-itemdb.packagePath = getMudletHomeDir()
+-- -- itemdb.inventory = itemdb.itemdb.inventory or {}
+-- itemdb.inventory = itemdb.inventory or {}
+
 
 
 local savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
 
--- Sample in game inventory
+-- Sample in game itemdb.inventory
 -- You are carrying:
 --  a scroll of identify (excellent)
 --  a grass skirt festooned with beads and feathers (excellent)
@@ -18,7 +16,7 @@ local savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb
 --  a backpack (excellent)
 --  a bag (excellent)
 
-inventory.colors = {
+itemdb.inventory.colors = {
     bgPanel    = "rgb(20, 22, 28)",
     bgRow      = "rgb(28, 30, 36)",
     bgRowAlt   = "rgb(36, 39, 46)",
@@ -32,10 +30,10 @@ inventory.colors = {
 -- ------------------------------------------------------------
 -- CAPTURE STATE
 -- Uses the setTriggerStayOpen pattern — single named trigger
--- that stays open while we're reading inventory lines, then
+-- that stays open while we're reading itemdb.inventory lines, then
 -- closes itself when we hit an empty line or prompt
 -- ------------------------------------------------------------
-inventory.capture = inventory.capture or {
+itemdb.inventory.capture = itemdb.inventory.capture or {
     active = false,
     lines  = {},
 }
@@ -47,7 +45,7 @@ inventory.capture = inventory.capture or {
 --   a bottle (excellent) [2]
 --   a godstone shard of Makilor  (excellent)..It hums powerfully
 -- ------------------------------------------------------------
-function inventory.parseLine(line)
+function itemdb.inventory.parseLine(line)
     local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
 
     if trimmed == "" or trimmed:match("^You are carrying:") then
@@ -97,20 +95,20 @@ end
 -- ------------------------------------------------------------
 -- TRIGGER SCRIPT
 -- Note: Trigger "InventoryCapture" is defined in triggers.json
--- It fires on "You are carrying:" and calls inventory.onInventoryLine()
+-- It fires on "You are carrying:" and calls itemdb.inventory.onInventoryLine()
 -- ------------------------------------------------------------
 
 -- Inventory capture functions for the trigger system
-function inventory.startCapture()
+function itemdb.inventory.startCapture()
     cecho("<yellow>[Inventory] Starting capture...\n")
-    inventory.capture.active = true
-    inventory.capture.lines  = {}
+    itemdb.inventory.capture.active = true
+    itemdb.inventory.capture.lines  = {}
     setTriggerStayOpen("Inventory Capture", 99)
 end
 
-function inventory.onInventoryLine()
+function itemdb.inventory.onInventoryLine()
     -- cecho("onInventoryLine calleed!")
-    if not inventory.capture.active then
+    if not itemdb.inventory.capture.active then
         return
     end
     
@@ -123,7 +121,7 @@ function inventory.onInventoryLine()
     
     -- cecho("<cyan>[Captured] " .. line .. "\n")
     cecho("<cyan>[Captured]\n")
-    table.insert(inventory.capture.lines, line)
+    table.insert(itemdb.inventory.capture.lines, line)
 
     -- cecho("Is it a prompt?" .. isPrompt())
 
@@ -131,23 +129,23 @@ function inventory.onInventoryLine()
     setTriggerStayOpen("Inventory Capture", 1)
 end
 
-function inventory.endCapture()
-    if not inventory.capture.active then
+function itemdb.inventory.endCapture()
+    if not itemdb.inventory.capture.active then
         cecho("<red> capture not active\n")
         return
     end
     
-    if inventory.debug then
-        cecho("<yellow>[Inventory] Ending capture - processing " .. #inventory.capture.lines .. " lines\n")
+    if itemdb.inventory.debug then
+        cecho("<yellow>[Inventory] Ending capture - processing " .. #itemdb.inventory.capture.lines .. " lines\n")
     end
 
     setTriggerStayOpen("Inventory Capture", 0)
-    inventory.capture.active = false
+    itemdb.inventory.capture.active = false
 
     -- parse everything we collected
     local items = {}
-    for _, l in ipairs(inventory.capture.lines) do
-        local parsed = inventory.parseLine(l)
+    for _, l in ipairs(itemdb.inventory.capture.lines) do
+        local parsed = itemdb.inventory.parseLine(l)
         if parsed then
             -- cecho("<green>[Parsed] " .. parsed.name .. " x" .. parsed.quantity .. " (" .. (parsed.condition or "?") .. ")\n")
             table.insert(items, parsed)
@@ -157,12 +155,12 @@ function inventory.endCapture()
 
   
 
-    inventory.capture.lines = {}
+    itemdb.inventory.capture.lines = {}
 
     if #items > 0 then
         cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
         cecho("Items are ")
-        inventory.setData(items)
+        itemdb.inventory.setData(items)
 
         
     else
@@ -172,17 +170,17 @@ end
 
 
 
-function inventory.setData(newData)
-    inventory.data = newData or {}
-    inventory.refresh()
+function itemdb.inventory.setData(newData)
+    itemdb.inventory.data = newData or {}
+    itemdb.inventory.refresh()
 end
 
 
 
-function inventory.updateNow()
-    inventory.setData({})               -- clear old data + show placeholder
-    inventory.refresh()                 -- redraw immediately
-    send("inv")                           -- or whatever your inventory command is
+function itemdb.inventory.updateNow()
+    itemdb.inventory.setData({})               -- clear old data + show placeholder
+    itemdb.inventory.refresh()                 -- redraw immediately
+    send("inv")                           -- or whatever your itemdb.inventory command is
     -- The trigger will fire, capture fresh lines, parse, and setData() automatically
 end
 
@@ -193,7 +191,7 @@ end
 -- Adjustable.Container
 -- ------------------------------------------------------------
 
--- inventory.container = inventory.container or Adjustable.Container:new({
+-- itemdb.inventory.container = itemdb.inventory.container or Adjustable.Container:new({
 --     name          = "inventoryContainer",
 --     x             = "75%",
 --     y             = "2%",
@@ -208,67 +206,67 @@ end
 --     ]],
 -- })
 
--- inventory.container:show()
+-- itemdb.inventory.container:show()
 
 -- -- ------------------------------------------------------------
 -- -- Body label
 -- -- ------------------------------------------------------------
--- inventory.body = inventory.body or Geyser.Label:new({
---     name   = "inventory.body",
+-- itemdb.inventory.body = itemdb.inventory.body or Geyser.Label:new({
+--     name   = "itemdb.inventory.body",
 --     x      = 0,
 --     y      = 0,
 --     width  = "100%",
 --     height = "100%",
--- }, inventory.container)
+-- }, itemdb.inventory.container)
 
--- inventory.body:setStyleSheet([[
+-- itemdb.inventory.body:setStyleSheet([[
 --     background-color: rgb(20, 22, 28);
 -- ]])
 
 -- -- ------------------------------------------------------------
 -- -- DATA + ROWS
 -- -- ------------------------------------------------------------
--- inventory.data = inventory.data or {}
--- inventory.rows = inventory.rows or {}
+-- itemdb.inventory.data = itemdb.inventory.data or {}
+-- itemdb.inventory.rows = itemdb.inventory.rows or {}
 
 -- local function buildRows()
 --     cecho("Clearing ROWS!")
---     if #inventory.data == 0 then
+--     if #itemdb.inventory.data == 0 then
 --         -- placeholder when empty
---         inventory.rows[1] = Geyser.Label:new({
---             name   = "inventory.row.empty",
+--         itemdb.inventory.rows[1] = Geyser.Label:new({
+--             name   = "itemdb.inventory.row.empty",
 --             x      = 0,
 --             y      = 0,
 --             width  = "100%",
 --             height = "100%",
---         }, inventory.body)
+--         }, itemdb.inventory.body)
 
---         inventory.rows[1]:setStyleSheet([[
+--         itemdb.inventory.rows[1]:setStyleSheet([[
 --             background-color: rgb(20, 22, 28);
 --             padding-left: 12px;
 --         ]])
 
---         inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load the inventory</span>')
+--         itemdb.inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load the itemdb.inventory</span>')
 --         return
 --     end
 
---     local rowCount = #inventory.data
+--     local rowCount = #itemdb.inventory.data
 --     local rowH     = math.floor(100 / rowCount)
 
---     for i, item in ipairs(inventory.data) do
+--     for i, item in ipairs(itemdb.inventory.data) do
 --         local yPos  = tostring((i - 1) * rowH) .. "%"
 --         local hPos  = tostring(rowH) .. "%"
---         local rowBg = (i % 2 == 0) and inventory.colors.bgRowAlt or inventory.colors.bgRow
+--         local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
 
---         inventory.rows[i] = Geyser.Label:new({
---             name   = "inventory.row." .. i,
+--         itemdb.inventory.rows[i] = Geyser.Label:new({
+--             name   = "itemdb.inventory.row." .. i,
 --             x      = 0,
 --             y      = yPos,
 --             width  = "100%",
 --             height = hPos,
---         }, inventory.body)
+--         }, itemdb.inventory.body)
 
---         inventory.rows[i]:setStyleSheet([[
+--         itemdb.inventory.rows[i]:setStyleSheet([[
 --             background-color: ]] .. rowBg .. [[;
 --             border-bottom: 1px solid rgb(60, 65, 78);
 --             padding-left: 8px;
@@ -278,15 +276,15 @@ end
 --         local condStr = item.condition and (" (" .. item.condition .. ")") or ""
 --         local descStr = item.desc and (" - " .. item.desc) or ""
 
---         inventory.rows[i]:echo(string.format(
+--         itemdb.inventory.rows[i]:echo(string.format(
 --             '<span style="color:%s; font-size:11px; font-family:sans-serif;">%s</span>'
 --             .. '<span style="color:%s; font-size:11px; font-family:monospace; font-weight:bold;">%s</span>'
 --             .. '<span style="color:%s; font-size:10px; font-family:sans-serif;">%s</span>'
 --             .. '<span style="color:%s; font-size:9px; font-family:sans-serif;">%s</span>',
---             inventory.colors.textName,  item.name,
---             inventory.colors.textQty,   qtyStr,
---             inventory.colors.textCond,  condStr,
---             inventory.colors.textDesc,  descStr
+--             itemdb.inventory.colors.textName,  item.name,
+--             itemdb.inventory.colors.textQty,   qtyStr,
+--             itemdb.inventory.colors.textCond,  condStr,
+--             itemdb.inventory.colors.textDesc,  descStr
 --         ))
 --     end
 -- end
@@ -294,14 +292,14 @@ end
 -- -- ------------------------------------------------------------
 -- -- PUBLIC: refresh
 -- -- ------------------------------------------------------------
--- function inventory.refresh()
---     cecho("Inventory refresh triggered\n" .. tostring(#inventory.data) .. " items\n")
---     for _, row in ipairs(inventory.rows) do
+-- function itemdb.inventory.refresh()
+--     cecho("Inventory refresh triggered\n" .. tostring(#itemdb.inventory.data) .. " items\n")
+--     for _, row in ipairs(itemdb.inventory.rows) do
 --         cecho("Hiding the row " .. tostring(row.name) .. "\n")
 --         row:hide()
 --         Geyser.Widget.delete(row)
 --     end
---     inventory.rows = {}
+--     itemdb.inventory.rows = {}
 --     cecho("Inventory Cleared!!\n")
 --     buildRows()
 -- end
@@ -309,9 +307,9 @@ end
 -- -- ------------------------------------------------------------
 -- -- PUBLIC: setData
 -- -- ------------------------------------------------------------
--- function inventory.setData(newData)
---     inventory.data = newData or {}
---     inventory.refresh()
+-- function itemdb.inventory.setData(newData)
+--     itemdb.inventory.data = newData or {}
+--     itemdb.inventory.refresh()
 -- end
 
 
@@ -327,7 +325,7 @@ end
 -- ------------------------------------------------------------
 -- Inventory Window
 -- ------------------------------------------------------------
-inventory.container = inventory.container or Adjustable.Container:new({
+itemdb.inventory.container = itemdb.inventory.container or Adjustable.Container:new({
     name          = "inventoryContainer",
     x             = "75%",
     y             = "2%",
@@ -343,30 +341,30 @@ inventory.container = inventory.container or Adjustable.Container:new({
 
 })
 
-inventory.container:show()
+itemdb.inventory.container:show()
 
 
--- How do we put the inventory into a scroll box incase user shrinks window??
--- inventory.scrollbox = Adjustable.ScrollBox:new({
---     name   = "inventory.scrollbox",
+-- How do we put the itemdb.inventory into a scroll box incase user shrinks window??
+-- itemdb.inventory.scrollbox = Adjustable.ScrollBox:new({
+--     name   = "itemdb.inventory.scrollbox",
 --     x      = 0,
 --     y      = 0,
 --     width  = "100%",
 --     height = "100%",
--- }, inventory.container)
+-- }, itemdb.inventory.container)
 
 -- ------------------------------------------------------------
 -- Single persistent content label (no dynamic rows!)
 -- ------------------------------------------------------------
-inventory.contentLabel = inventory.contentLabel or Geyser.Label:new({
-    name   = "inventory.content",
+itemdb.inventory.contentLabel = itemdb.inventory.contentLabel or Geyser.Label:new({
+    name   = "itemdb.inventory.content",
     x      = 0,
     y      = 0,
     width  = "100%",
     height = "100%",
-}, inventory.container)
+}, itemdb.inventory.container)
 
-inventory.contentLabel:setStyleSheet([[
+itemdb.inventory.contentLabel:setStyleSheet([[
     background-color: rgb(20, 22, 28);
     padding: 8px;
     qproperty-alignment: 'AlignTop | AlignLeft';
@@ -375,45 +373,45 @@ inventory.contentLabel:setStyleSheet([[
 -- ------------------------------------------------------------
 -- DATA (keep as table for easy sorting/filtering later if needed)
 -- ------------------------------------------------------------
-inventory.data = inventory.data or {}
+itemdb.inventory.data = itemdb.inventory.data or {}
 
 -- ------------------------------------------------------------
 -- Refresh: build ONE big formatted string and echo it
 -- ------------------------------------------------------------
-function inventory.refresh()
-    cecho("Inventory refresh triggered - " .. tostring(#inventory.data) .. " items\n")
+function itemdb.inventory.refresh()
+    cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
  
     
 
-    if #inventory.data == 0 then
+    if #itemdb.inventory.data == 0 then
         local placeholder = [[
             <span style="color:#6a7a8a; font-size:11px; font-style:italic;">
-            Type "i" to load the inventory
+            Type "i" to load the itemdb.inventory
             </span>]]
-        inventory.contentLabel:echo(placeholder)
+        itemdb.inventory.contentLabel:echo(placeholder)
         return
     end
 
     local text = ""
-    for i, item in ipairs(inventory.data) do
-        local rowBg = (i % 2 == 0) and inventory.colors.bgRowAlt or inventory.colors.bgRow
+    for i, item in ipairs(itemdb.inventory.data) do
+        local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
         
         local qtyStr  = (item.quantity > 1) and 
-            (" <span style='color:" .. inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
+            (" <span style='color:" .. itemdb.inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
             or ""
         
         local condStr = item.condition and 
-            (" <span style='color:" .. inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
+            (" <span style='color:" .. itemdb.inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
             or ""
         
         local descStr = item.desc and 
-            (" <span style='color:" .. inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
+            (" <span style='color:" .. itemdb.inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
             or ""
 
         -- Each item on its own "row" with line break + padding simulation
         text = text .. [[
             <div style="background-color:]] .. rowBg .. [[; padding: 4px 8px; border-bottom: 1px solid rgb(60,65,78); margin: 0; line-height: 1.4;">
-            <span style="color:]] .. inventory.colors.textName .. [[; font-size:11px; font-family:sans-serif;">]] .. item.name .. [[</span>]] ..
+            <span style="color:]] .. itemdb.inventory.colors.textName .. [[; font-size:11px; font-family:sans-serif;">]] .. item.name .. [[</span>]] ..
             qtyStr .. condStr .. descStr .. [[
             </div>]]
     end
@@ -421,17 +419,17 @@ function inventory.refresh()
     -- Wrap everything in a container for better spacing
     text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
 
-    inventory.contentLabel:echo(text)
+    itemdb.inventory.contentLabel:echo(text)
 end
 
 -- ------------------------------------------------------------
 -- setData (unchanged, but calls refresh)
 -- ------------------------------------------------------------
-function inventory.setData(newData)
-    inventory.data = newData or {}
-    inventory.refresh()
+function itemdb.inventory.setData(newData)
+    itemdb.inventory.data = newData or {}
+    itemdb.inventory.refresh()
 
-    -- saving it on every inventory trigger for now.. in future we will attach to an event..
+    -- saving it on every itemdb.inventory trigger for now.. in future we will attach to an event..
 
     -- example
     --- initialize BlackMUDlet and submodules
@@ -453,17 +451,17 @@ function inventory.setData(newData)
         
     --     BlackMUDlet.Config = table.update(BlackMUDlet.Config, loaded or {})
     -- ...
-    -- inventory.save()
+    -- itemdb.inventory.save()
 end
 
 
 
 -- called when sysExitEvent
-function inventory.save()
+function itemdb.inventory.save()
     cecho("<yellow>Attempting a save\n")
-    if inventory.data then
+    if itemdb.inventory.data then
         cecho("<yellow>Saving to " .. savePath .. "\n")
-        table.save(savePath, inventory.data)
+        table.save(savePath, itemdb.inventory.data)
     end
 end
 -- ------------------------------------------------------------
@@ -472,18 +470,18 @@ end
 
 
 -- called on sysLoadEvent and sysInstall, but will only run once
-function inventory.initialize()
-    table.load(savePath, inventory.data)
-    inventory.refresh() 
+function itemdb.inventory.initialize()
+    table.load(savePath, itemdb.inventory.data)
+    itemdb.inventory.refresh() 
 end
 
 
 
 
--- inventory.initialize()
+-- itemdb.inventory.initialize()
 
 
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", inventory.initialize)
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", inventory.initialize)
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", itemdb.inventory.initialize)
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb.inventory.initialize)
 
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", inventory.save)
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.inventory.save)

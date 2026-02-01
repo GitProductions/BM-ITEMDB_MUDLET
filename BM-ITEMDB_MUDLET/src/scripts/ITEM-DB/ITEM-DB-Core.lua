@@ -1,9 +1,10 @@
 -- Item DB - Core helpers and shared state
-
+itemdb.configFile = "bmud_itemdb.lua"
+itemdb.packageName = "BM-ITEMDB"
+itemdb.packagePath = getMudletHomeDir()
 
 itemdb = itemdb or {}
-
-
+itemdb.inventory = {name = "Open Inventory....", condition = "", quantity = 1, desc = nil}
 itemdb.state = itemdb.state or {
     captureActive = false,
     captureLines = {},
