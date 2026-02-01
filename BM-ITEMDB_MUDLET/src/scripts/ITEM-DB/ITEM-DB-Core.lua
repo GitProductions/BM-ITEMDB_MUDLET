@@ -304,7 +304,7 @@ __PKGNAME__.Mupdate = __PKGNAME__.Mupdate or {
   -- Customizable settings
   mupdate_url = "https://github.com/gesslar/Mupdate/releases/latest/download/Mupdate.lua",
   payload = {
-    download_path = "https://github.com/gesslar/__PKGNAME__/releases/latest/download/",
+    download_path = "https://github.com/GitProductions/__PKGNAME__/releases/latest/download/",
     package_name = "__PKGNAME__",
     remote_version_file = "__PKGNAME___version.txt",
     param_key = "response-content-disposition",
