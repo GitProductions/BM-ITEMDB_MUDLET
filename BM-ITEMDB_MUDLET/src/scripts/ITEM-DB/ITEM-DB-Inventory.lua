@@ -375,6 +375,8 @@ inventory.data = inventory.data or {}
 -- ------------------------------------------------------------
 function inventory.refresh()
     cecho("Inventory refresh triggered - " .. tostring(#inventory.data) .. " items\n")
+ 
+    
 
     if #inventory.data == 0 then
         local placeholder = [[
@@ -422,12 +424,21 @@ function inventory.setData(newData)
     inventory.data = newData or {}
     inventory.refresh()
 
-    inventory.container:save(1)
+    -- attempting to save layout etc for next boot
+    -- inventory.container:save(1)
+    -- inventory.container:saveAll("default")
+
+    table.save(getMudletHomeDir().."/mytable.lua", inventory)
 end
 
 -- ------------------------------------------------------------
 -- INITIAL BUILD
 -- ------------------------------------------------------------
 
-inventory.container:load(1)
-inventory.refresh()  -- show placeholder or last data
+
+-- inventory.container:load(1)
+
+
+-- adding this and it causes it to no longer work at all???
+-- table.load(getMudletHomeDir().."/mytable.lua", inventory)
+inventory.refresh() 
