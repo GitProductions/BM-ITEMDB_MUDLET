@@ -6,6 +6,8 @@ itemdb.packagePath = getMudletHomeDir()
 
 
 
+----------------------------------
+--  FOR DEVLEOPMENT USE ONLY
 
 local function killMDK()
   for pkgName, _ in pairs(package.loaded) do
@@ -28,6 +30,11 @@ end
 if not MDKhelper then
   registerAnonymousEventHandler("sysLoadEvent", create_helper)
 end
+
+----------------------------------
+
+
+
 
 
 
@@ -167,6 +174,8 @@ end
 function itemdb.submitCapturedItem(itemLine)
     if not itemdb.state.selectingInventoryItem then
         cecho("<red>No item selection in progress.\n")
+
+        -- This is when we can either hide the buttons or prompt the user to identify an item first?
         return
     end
 
@@ -280,6 +289,12 @@ function itemdb.searchItems(query)
         getHTTP(url)
     end)
 end
+
+
+
+
+
+
 
 
 

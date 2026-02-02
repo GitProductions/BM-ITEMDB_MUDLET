@@ -1,4 +1,4 @@
-local savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
+itemdb.savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
 
 
 itemdb.inventory.colors = {
@@ -120,8 +120,22 @@ function itemdb.inventory.onInventoryLine()
     end
     
     -- cecho("<cyan>[Captured] " .. line .. "\n")
-    cecho("<cyan>[Captured]\n")
+    -- cecho("<cyan>[Captured]\n")
+
+
+    -- erasing line from view
+   
+
     table.insert(itemdb.inventory.capture.lines, line)
+
+    -- Every so often we COULD poll the users inventory to keep the UI up to date... 
+    -- but now im realizing this is a terrible idea due to lag during fights which could be determential and terrible idea... 
+    -- we have to make sure we NEVER send an action on behalf of the user unless they click a button etc..
+    -- So instead, we will do this onStartup, it should be completely fine??? but maybe not yet... not et..
+    -- if itemdb.state.startup then
+    --     deleteLine()
+    -- end
+
 
     -- cecho("Is it a prompt?" .. isPrompt())
 
@@ -131,7 +145,7 @@ end
 
 function itemdb.inventory.endCapture()
     if not itemdb.inventory.capture.active then
-        cecho("<red> capture not active\n")
+        -- cecho("<red> capture not active\n")
         return
     end
     
@@ -159,7 +173,7 @@ function itemdb.inventory.endCapture()
 
     if #items > 0 then
         cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
-        cecho("Items are ")
+        -- cecho("Items are ")
         itemdb.inventory.setData(items)
 
         
@@ -240,7 +254,7 @@ itemdb.inventory.data = itemdb.inventory.data or {}
 -- this looks great, but results in a not so great user experience as the contents isnt scrollable, and we cant use buttons directly
 -- ------------------------------------------------------------
 function itemdb.inventory.refresh()
-    cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
+    -- cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
  
 
     if #itemdb.inventory.data == 0 then
@@ -360,7 +374,13 @@ end
 -- ------------------------------------------------------------
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
+
+
     itemdb.inventory.refresh()
+    itemdb.inventory.window.refresh()
+
+
+    -- itemdb.inventory.save()
 
     
 end
@@ -371,21 +391,20 @@ end
 function itemdb.inventory.save()
     cecho("<yellow>Attempting a save\n")
     if itemdb.inventory.data then
-        cecho("<yellow>Saving to " .. savePath .. "\n")
-        table.save(savePath, itemdb.inventory.data)
+        cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
+        table.save(itemdb.savePath, itemdb.inventory.data)
     end
 end
 
 -- called on sysLoadEvent and sysInstall, but will only run once
 function itemdb.inventory.initialize()
-    table.load(savePath, itemdb.inventory.data)
+    cecho("<yellow>Attempting to load inventory data...\n")
+    table.load(itemdb.savePath, itemdb.inventory.data)
+
+    cecho("<yellow>Inventory data loaded.\n" .. #itemdb.inventory.data .. " items.\n")
     itemdb.inventory.refresh() 
+    itemdb.inventory.window.refresh()
 end
-
-
-
-
-
 
 
 
