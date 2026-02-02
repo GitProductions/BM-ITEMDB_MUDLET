@@ -1,20 +1,5 @@
--- -- itemdb.inventory = itemdb.itemdb.inventory or {}
--- itemdb.inventory = itemdb.inventory or {}
-
-
-
 local savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
 
--- Sample in game itemdb.inventory
--- You are carrying:
---  a scroll of identify (excellent)
---  a grass skirt festooned with beads and feathers (excellent)
---  a bottle (excellent) [2]
---  a godstone shard of Makilor  (excellent)..It hums powerfully
---  a water skin (excellent)
---  a long wooden planked box (excellent)
---  a backpack (excellent)
---  a bag (excellent)
 
 itemdb.inventory.colors = {
     bgPanel    = "rgb(20, 22, 28)",
@@ -38,8 +23,23 @@ itemdb.inventory.capture = itemdb.inventory.capture or {
     lines  = {},
 }
 
+
+
+
+-- Sample in game itemdb.inventory
+-- You are carrying:
+--  a scroll of identify (excellent)
+--  a grass skirt festooned with beads and feathers (excellent)
+--  a bottle (excellent) [2]
+--  a godstone shard of Makilor  (excellent)..It hums powerfully
+--  a water skin (excellent)
+--  a long wooden planked box (excellent)
+--  a backpack (excellent)
+--  a bag (excellent)
+
+
 -- ------------------------------------------------------------
--- PARSER
+-- PARSER for Inventory
 -- Handles:
 --   a scroll of identify (excellent)
 --   a bottle (excellent) [2]
@@ -177,6 +177,7 @@ end
 
 
 
+-- This is ran via trigger when inventory is captured fully
 function itemdb.inventory.updateNow()
     itemdb.inventory.setData({})               -- clear old data + show placeholder
     itemdb.inventory.refresh()                 -- redraw immediately
@@ -185,140 +186,6 @@ function itemdb.inventory.updateNow()
 end
 
 
-
-
--- ------------------------------------------------------------
--- Adjustable.Container
--- ------------------------------------------------------------
-
--- itemdb.inventory.container = itemdb.inventory.container or Adjustable.Container:new({
---     name          = "inventoryContainer",
---     x             = "75%",
---     y             = "2%",
---     width         = "22%",
---     height        = "35%",
---     titleText     = "Inventory",
---     titleTxtColor = "#c8d6e5",
---     adjLabelstyle = [[
---         background-color: rgb(20, 22, 28);
---         border: 1px solid rgb(80, 90, 110);
---         border-radius: 4px;
---     ]],
--- })
-
--- itemdb.inventory.container:show()
-
--- -- ------------------------------------------------------------
--- -- Body label
--- -- ------------------------------------------------------------
--- itemdb.inventory.body = itemdb.inventory.body or Geyser.Label:new({
---     name   = "itemdb.inventory.body",
---     x      = 0,
---     y      = 0,
---     width  = "100%",
---     height = "100%",
--- }, itemdb.inventory.container)
-
--- itemdb.inventory.body:setStyleSheet([[
---     background-color: rgb(20, 22, 28);
--- ]])
-
--- -- ------------------------------------------------------------
--- -- DATA + ROWS
--- -- ------------------------------------------------------------
--- itemdb.inventory.data = itemdb.inventory.data or {}
--- itemdb.inventory.rows = itemdb.inventory.rows or {}
-
--- local function buildRows()
---     cecho("Clearing ROWS!")
---     if #itemdb.inventory.data == 0 then
---         -- placeholder when empty
---         itemdb.inventory.rows[1] = Geyser.Label:new({
---             name   = "itemdb.inventory.row.empty",
---             x      = 0,
---             y      = 0,
---             width  = "100%",
---             height = "100%",
---         }, itemdb.inventory.body)
-
---         itemdb.inventory.rows[1]:setStyleSheet([[
---             background-color: rgb(20, 22, 28);
---             padding-left: 12px;
---         ]])
-
---         itemdb.inventory.rows[1]:echo('<span style="color:#6a7a8a; font-size:11px; font-family:sans-serif; font-style:italic;">Type "i" to load the itemdb.inventory</span>')
---         return
---     end
-
---     local rowCount = #itemdb.inventory.data
---     local rowH     = math.floor(100 / rowCount)
-
---     for i, item in ipairs(itemdb.inventory.data) do
---         local yPos  = tostring((i - 1) * rowH) .. "%"
---         local hPos  = tostring(rowH) .. "%"
---         local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
-
---         itemdb.inventory.rows[i] = Geyser.Label:new({
---             name   = "itemdb.inventory.row." .. i,
---             x      = 0,
---             y      = yPos,
---             width  = "100%",
---             height = hPos,
---         }, itemdb.inventory.body)
-
---         itemdb.inventory.rows[i]:setStyleSheet([[
---             background-color: ]] .. rowBg .. [[;
---             border-bottom: 1px solid rgb(60, 65, 78);
---             padding-left: 8px;
---         ]])
-
---         local qtyStr  = (item.quantity > 1) and (" x" .. tostring(item.quantity)) or ""
---         local condStr = item.condition and (" (" .. item.condition .. ")") or ""
---         local descStr = item.desc and (" - " .. item.desc) or ""
-
---         itemdb.inventory.rows[i]:echo(string.format(
---             '<span style="color:%s; font-size:11px; font-family:sans-serif;">%s</span>'
---             .. '<span style="color:%s; font-size:11px; font-family:monospace; font-weight:bold;">%s</span>'
---             .. '<span style="color:%s; font-size:10px; font-family:sans-serif;">%s</span>'
---             .. '<span style="color:%s; font-size:9px; font-family:sans-serif;">%s</span>',
---             itemdb.inventory.colors.textName,  item.name,
---             itemdb.inventory.colors.textQty,   qtyStr,
---             itemdb.inventory.colors.textCond,  condStr,
---             itemdb.inventory.colors.textDesc,  descStr
---         ))
---     end
--- end
-
--- -- ------------------------------------------------------------
--- -- PUBLIC: refresh
--- -- ------------------------------------------------------------
--- function itemdb.inventory.refresh()
---     cecho("Inventory refresh triggered\n" .. tostring(#itemdb.inventory.data) .. " items\n")
---     for _, row in ipairs(itemdb.inventory.rows) do
---         cecho("Hiding the row " .. tostring(row.name) .. "\n")
---         row:hide()
---         Geyser.Widget.delete(row)
---     end
---     itemdb.inventory.rows = {}
---     cecho("Inventory Cleared!!\n")
---     buildRows()
--- end
-
--- -- ------------------------------------------------------------
--- -- PUBLIC: setData
--- -- ------------------------------------------------------------
--- function itemdb.inventory.setData(newData)
---     itemdb.inventory.data = newData or {}
---     itemdb.inventory.refresh()
--- end
-
-
--- -- ------------------------------------------------------------
--- -- INITIAL BUILD
--- -- ------------------------------------------------------------
--- buildRows()
-
---  END REMOVED OLD ATTEMPTED
 
 
 
@@ -344,17 +211,8 @@ itemdb.inventory.container = itemdb.inventory.container or Adjustable.Container:
 itemdb.inventory.container:show()
 
 
--- How do we put the itemdb.inventory into a scroll box incase user shrinks window??
--- itemdb.inventory.scrollbox = Adjustable.ScrollBox:new({
---     name   = "itemdb.inventory.scrollbox",
---     x      = 0,
---     y      = 0,
---     width  = "100%",
---     height = "100%",
--- }, itemdb.inventory.container)
-
 -- ------------------------------------------------------------
--- Single persistent content label (no dynamic rows!)
+-- Single persistent content label
 -- ------------------------------------------------------------
 itemdb.inventory.contentLabel = itemdb.inventory.contentLabel or Geyser.Label:new({
     name   = "itemdb.inventory.content",
@@ -370,13 +228,16 @@ itemdb.inventory.contentLabel:setStyleSheet([[
     qproperty-alignment: 'AlignTop | AlignLeft';
 ]])
 
--- ------------------------------------------------------------
--- DATA (keep as table for easy sorting/filtering later if needed)
--- ------------------------------------------------------------
+
 itemdb.inventory.data = itemdb.inventory.data or {}
 
+
+
+
+
 -- ------------------------------------------------------------
--- Refresh: build ONE big formatted string and echo it
+-- Refresh: building ONE big formatted string and echoing it
+-- this looks great, but results in a not so great user experience as the contents isnt scrollable, and we cant use buttons directly
 -- ------------------------------------------------------------
 function itemdb.inventory.refresh()
     cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
@@ -411,7 +272,7 @@ function itemdb.inventory.refresh()
             or ""
 
         -- how to make button attached to item row to allow users to click and 'look item.name'?  in future maybe we can reference the itemDB and find precise keywords for various actions and controls
-        -- attempted it but it 
+        -- attempted it but
         
 
         -- Each item on its own "row" with line break + padding simulation
@@ -425,15 +286,82 @@ function itemdb.inventory.refresh()
     -- Wrap everything in a container for better spacing
     text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
 
-    itemdb.inventory.contentLabel:echo(text)
+
+    itemdb.inventory.window.box.label:echo(text)
 end
 
+
+-- another example but it just not working properly.. cant make each row only 10px for example
+-- everything stretches when the window does.. it looks terrible...
+-- function itemdb.inventory.refresh()
+--     -- Clear old content properly
+--     itemdb.inventory.contentLabel:clear() -- wipes HTML if any
+--     -- Hide/destroy previous dynamic children if you tracked them
+--     -- For simplicity, we'll recreate everything fresh each time
+
+--     if #itemdb.inventory.data == 0 then
+--         itemdb.inventory.contentLabel:echo(placeholder)
+--         return
+--     end
+
+--     local vbox = Geyser.VBox:new({
+--         x = 0,
+--         y = 0,
+--         width = "100%",
+--         height = "100%"
+--     }, itemdb.inventory.contentLabel)
+
+--     for i, item in ipairs(itemdb.inventory.data) do
+--         local row = Geyser.HBox:new({
+--             height = 10
+--         }, vbox)
+
+--         -- Name + details label (fills space)
+--         local nameLabel = Geyser.Label:new({
+--             name = "itemNameLabel" .. i,
+--             -- width = "50%",
+--             width = 20,
+--             -- message = string.format("<span style='color:%s;'>%s</span>%s%s%s", itemdb.inventory.colors.textName,
+--                 -- item.name, (item.quantity > 1 and " x" .. item.quantity or ""),
+--                 -- (item.condition and " (" .. item.condition .. ")" or ""), (item.desc and " - " .. item.desc or ""))
+--             message = item.name .. "(" .. item.condition .. ")" .. " - "
+--         }, row)
+
+--         myButton:setStyleSheet([[
+--             background-color: blue;
+--             color: white;
+--             border: 1px solid black;
+--         ]])
+
+--         -- The height and width of this never seem to get set properly.. how do we limit this?
+--         -- local lookBtn = Geyser.Button:new({
+--         --     width = 40,
+--         --     height = 20,
+--         --     clickCommand="look " .. item.name,
+--         --     msg = "<center>Select Item</center>",
+--         --     style = [[ margin: 1px; background-color: black; border: 1px solid white; ]], 
+--         -- }, row)
+--         -- style sheets dont seem to apply to buttons..
+
+--         -- Optional: alternate row bg
+--         if i % 2 == 0 then
+--             row:setStyleSheet("background-color: #1e1e2e;")
+--         end
+--     end
+
+--     -- Optional: make contentLabel scrollable if too tall
+--     -- or resize it: itemdb.inventory.contentLabel:resizeToFitContents() if supported
+-- end
+
+
 -- ------------------------------------------------------------
--- setData (unchanged, but calls refresh)
+-- setData
 -- ------------------------------------------------------------
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
     itemdb.inventory.refresh()
+
+    
 end
 
 
@@ -446,10 +374,6 @@ function itemdb.inventory.save()
         table.save(savePath, itemdb.inventory.data)
     end
 end
--- ------------------------------------------------------------
--- INITIAL BUILD
--- ------------------------------------------------------------
-
 
 -- called on sysLoadEvent and sysInstall, but will only run once
 function itemdb.inventory.initialize()
@@ -460,10 +384,12 @@ end
 
 
 
--- itemdb.inventory.initialize()
+
+
+
+
 
 
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", itemdb.inventory.initialize)
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb.inventory.initialize)
-
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.inventory.save)

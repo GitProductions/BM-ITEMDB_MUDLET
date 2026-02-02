@@ -60,12 +60,14 @@ If that doesn't work or you have other techincal issues please reach out to Gita
 
 Test add an item to inventory db 
 
-lua inventory.setData({{name = "dagger", condition = "excellent", quantity = 1, desc = nil}})
+lua itemdb.inventory.setData({{name = "dagger", condition = "excellent", quantity = 15, desc = nil}, {name = "sword", condition = "excellent", quantity = 1, desc = nil}})
+
+lua 
 
 Check inventory capture length
-lua cecho(tostring(#inventory.data))
+lua cecho(tostring(#itemdb.inventory.data))
 
-lua for i, row in ipairs(inventory.rows) do cecho(i .. ": " .. row.name .. " visible=" .. tostring(row:isVisible()) .. "\n") end
+lua for i, row in ipairs(itemdb.inventory.rows) do cecho(i .. ": " .. row.name .. " visible=" .. tostring(row:isVisible()) .. "\n") end
 
 
 
