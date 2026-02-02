@@ -83,6 +83,16 @@ local rows = {{
 
 function itemdb.inventory.window.refresh()
     -- send("inv")
+    
+    -- Delete ALL old widgets (both labels and buttons) from previous refreshes
+    -- Using deleteLabel which works on all miniconsoles created by Geyser
+    for i = 1, 100 do
+        local labelName = "itemdb.inventory.window.label." .. i
+        local buttonName = "itemdb.inventory.window.button." .. i
+        
+        pcall(function() deleteLabel(labelName) end)
+        pcall(function() deleteLabel(buttonName) end)
+    end
 
     for i, item in ipairs(itemdb.inventory.data) do
         local yOff = (i - 1) * 30
@@ -127,7 +137,6 @@ function itemdb.inventory.window.refresh()
             ]]
         }, itemdb.inventory.window)
     end
-
 end
 
 
