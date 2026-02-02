@@ -39,6 +39,7 @@ itemdb.inventory.window = itemdb.inventory.window or  Adjustable.Container:new({
 })
 
 
+
 -- adding padding to this container does not effect the content which resides inside of it?
 -- so how do i add room between the outside of the box and the content inside of it? 
 -- default color:     background-color: rgb(20, 22, 28);
@@ -126,6 +127,7 @@ function itemdb.inventory.window.refresh()
             ]]
         }, itemdb.inventory.window)
     end
+
 end
 
 

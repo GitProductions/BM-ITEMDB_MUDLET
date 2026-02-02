@@ -48,25 +48,25 @@ function itemdb.inventory.parseLine(line)
     local quantity  = 1
     local desc      = nil
 
-    -- pull trailing description after ..
-    local descMatch = name:match("%.%.(.+)$")
-    if descMatch then
-        desc = descMatch:gsub("^%s+", "")
-        name = name:gsub("%s*%.%.+$", "")
-    end
-
-    -- pull quantity [n]
+    -- pull quantity [n] FIRST
     local qtyMatch = name:match("%[(%d+)%]")
     if qtyMatch then
         quantity = tonumber(qtyMatch)
         name     = name:gsub("%s*%[%d+%]", "")
     end
 
-    -- pull condition (word) at end
-    local condMatch = name:match("%((%w+)%)%s*$")
+    -- pull trailing description after .. SECOND
+    local descMatch = name:match("%.%.(.+)$")
+    if descMatch then
+        desc = descMatch:gsub("^%s+", "")
+        name = name:gsub("%s*%.%.+$", "")
+    end
+
+    -- pull condition (anything in parentheses) THIRD
+    local condMatch = name:match("%([^)]+%)")
     if condMatch then
-        condition = condMatch
-        name      = name:gsub("%s*%(%w+%)%s*$", "")
+        condition = condMatch:match("%(([^)]+)%)")
+        name      = name:gsub("%s*%([^)]+%)%s*$", "")
     end
 
     -- clean up whitespace
@@ -123,7 +123,7 @@ function itemdb.inventory.onInventoryLine()
     -- but now im realizing this is a terrible idea due to lag during fights which could be determential and terrible idea... 
     -- we have to make sure we NEVER send an action on behalf of the user unless they click a button etc..
     -- So instead, we will do this onStartup, it should be completely fine??? but maybe not yet... not et..
-    -- if itemdb.state.startup then
+    -- if itemdb.state.selectingInventoryItem then
     --     deleteLine()
     -- end
 

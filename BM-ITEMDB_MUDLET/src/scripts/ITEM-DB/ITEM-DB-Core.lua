@@ -133,7 +133,7 @@ function itemdb.askUser()
         cecho("<yellow>Select the item from your inventory:\n\n")
 
         itemdb.startItemSelection(20)
-        send("i")
+        send("inv")
     end, "Item-DB: Click to submit item", true)
 
     cecho("  ") -- spacing

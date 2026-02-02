@@ -97,6 +97,16 @@ packageName = BM-ITEMDB
 
 <!-- Need to figure out how to create a proper geyser window that can capture iventory data...
 
+
+inventory items dont seem to upadte properly when an item is removed.. 
+aka we have 6 items in list, one gets put away or dropped.. that item now has its named replaced with 'bag' or the last item inthe list instead of removing it all together...
+
+
+
+
+
+
+
 sample one liner works fine.. 
 
 and a fairly simple plain window works fine too..
