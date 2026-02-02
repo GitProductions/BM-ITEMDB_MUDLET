@@ -9,6 +9,19 @@
 -- 3. Contents are not scrollable and overflow if too long for window height.  - adding overflow to container doesnt help
 
 
+
+itemdb.inventory.colors = {
+    bgPanel    = "rgb(20, 22, 28)",
+    bgRow      = "rgb(28, 30, 36)",
+    bgRowAlt   = "rgb(36, 39, 46)",
+    border     = "rgb(80, 90, 110)",
+    textName   = "#e0e6f0",
+    textQty    = "#7ec8e3",
+    textCond   = "#8a9bb5",
+    textDesc   = "#6a7a8a",
+}
+
+
 itemdb.inventory.window = itemdb.inventory.window or  Adjustable.Container:new({
     name = "myWindow",
     x = "75%",
@@ -18,8 +31,8 @@ itemdb.inventory.window = itemdb.inventory.window or  Adjustable.Container:new({
     titleText = "Inventory - v2",
     titleTxtColor = "#c8d6e5",
     adjLabelstyle = [[
-        background-color: rgb(20, 22, 28);
-        border: 1px solid rgb(80, 90, 110);
+        background-color: ]] .. itemdb.inventory.colors.bgPanel .. [[;
+        border: 1px solid ]] .. itemdb.inventory.colors.border .. [[;
         border-radius: 4px;
     ]]
 
@@ -77,7 +90,7 @@ function itemdb.inventory.window.refresh()
         local label_text = item.name .. " (" .. item.condition .. ")"
 
         if item.quantity and item.quantity >= 2 then
-            label_text = label_text .. " [" .. item.quantity .. "]"
+            label_text = label_text .. " <span style='color: " .. itemdb.inventory.colors.textQty .. "'>" .. "[" .. item.quantity .. "]</span>"
         end
 
         -- left label
@@ -89,7 +102,7 @@ function itemdb.inventory.window.refresh()
             height = "25px",
             message = label_text
         }, itemdb.inventory.window):setStyleSheet([[
-            background-color: #2b2b2b;
+            background-color: ]] .. itemdb.inventory.colors.bgRow .. [[;
             padding-left: 10px;
             font-weight: 600
         ]])
@@ -108,7 +121,7 @@ function itemdb.inventory.window.refresh()
             height = "25px",
             style = [[
                 margin: 1px;
-                background-color: black;
+                background-color: ]] .. itemdb.inventory.colors.bgRow .. [[;
                 border: 1px solid white;
             ]]
         }, itemdb.inventory.window)

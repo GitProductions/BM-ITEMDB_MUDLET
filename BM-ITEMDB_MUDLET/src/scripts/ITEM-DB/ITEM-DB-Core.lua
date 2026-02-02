@@ -117,6 +117,10 @@ function itemdb.finishIdentifyCapture()
     end
 
     -- expandAlias("capture-item-button")
+
+    -- Ask user initites a button to ask user if they want to submit item..
+    -- if selecting yes, the users inventory is opened and parsed and we attach buttons to each line..
+    -- we now want to move away from this and instead make the buttons in our UI window appear for the user.. and or we need to show the window
     itemdb.askUser()
     
     -- resetCaptureLines()

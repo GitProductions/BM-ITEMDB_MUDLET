@@ -255,57 +255,57 @@ itemdb.inventory.data = itemdb.inventory.data or {}
 -- Refresh: building ONE big formatted string and echoing it
 -- this looks great, but results in a not so great user experience as the contents isnt scrollable, and we cant use buttons directly
 -- ------------------------------------------------------------
-function itemdb.inventory.refresh()
-    -- cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
+-- function itemdb.inventory.refresh()
+--     -- cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
  
 
-    if #itemdb.inventory.data == 0 then
-        local placeholder = [[
-            <span style="color:#6a7a8a; font-size:11px; font-style:italic;">
-            Type "i" to load the itemdb.inventory
-            </span>]]
-        itemdb.inventory.contentLabel:echo(placeholder)
-        return
-    end
+--     if #itemdb.inventory.data == 0 then
+--         local placeholder = [[
+--             <span style="color:#6a7a8a; font-size:11px; font-style:italic;">
+--             Type "i" to load the itemdb.inventory
+--             </span>]]
+--         itemdb.inventory.contentLabel:echo(placeholder)
+--         return
+--     end
 
-    local text = ""
-    for i, item in ipairs(itemdb.inventory.data) do
-        local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
+--     local text = ""
+--     for i, item in ipairs(itemdb.inventory.data) do
+--         local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
         
-        -- Items Quanity Styling
-        local qtyStr  = (item.quantity > 1) and 
-            (" <span style='color:" .. itemdb.inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
-            or ""
+--         -- Items Quanity Styling
+--         local qtyStr  = (item.quantity > 1) and 
+--             (" <span style='color:" .. itemdb.inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
+--             or ""
         
-        -- Items Condition Styling
-        local condStr = item.condition and 
-            (" <span style='color:" .. itemdb.inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
-            or ""
+--         -- Items Condition Styling
+--         local condStr = item.condition and 
+--             (" <span style='color:" .. itemdb.inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
+--             or ""
         
-        -- Items Short Description styling
-        local descStr = item.desc and 
-            (" <span style='color:" .. itemdb.inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
-            or ""
+--         -- Items Short Description styling
+--         local descStr = item.desc and 
+--             (" <span style='color:" .. itemdb.inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
+--             or ""
 
-        -- how to make button attached to item row to allow users to click and 'look item.name'?  in future maybe we can reference the itemDB and find precise keywords for various actions and controls
-        -- attempted it but
+--         -- how to make button attached to item row to allow users to click and 'look item.name'?  in future maybe we can reference the itemDB and find precise keywords for various actions and controls
+--         -- attempted it but
         
 
-        -- Each item on its own "row" with line break + padding simulation
-        text = text .. [[
-            <div style="background-color:]] .. rowBg .. [[; padding: 4px 8px; border-bottom: 1px solid rgb(60,65,78); margin: 0; line-height: 1.4;">
-            <span style="color:]] .. itemdb.inventory.colors.textName .. [[; font-size:11px; font-family:sans-serif;">]] .. item.name .. [[</span>]] ..
-            qtyStr .. condStr .. descStr .. [[
-            </div>]]
-    end
+--         -- Each item on its own "row" with line break + padding simulation
+--         text = text .. [[
+--             <div style="background-color:]] .. rowBg .. [[; padding: 4px 8px; border-bottom: 1px solid rgb(60,65,78); margin: 0; line-height: 1.4;">
+--             <span style="color:]] .. itemdb.inventory.colors.textName .. [[; font-size:11px; font-family:sans-serif;">]] .. item.name .. [[</span>]] ..
+--             qtyStr .. condStr .. descStr .. [[
+--             </div>]]
+--     end
 
-    -- Wrap everything in a container for better spacing
-    text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
+--     -- Wrap everything in a container for better spacing
+--     text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
 
 
-    -- itemdb.window.box.label:echo(text)
-    itemdb.inventory.contentLabel:echo(text)
-end
+--     -- itemdb.window.box.label:echo(text)
+--     itemdb.inventory.contentLabel:echo(text)
+-- end
 
 
 -- another example but it just not working properly.. cant make each row only 10px for example
