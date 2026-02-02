@@ -2,17 +2,6 @@
 itemdb.savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
 
 
-itemdb.inventory.colors = {
-    bgPanel    = "rgb(20, 22, 28)",
-    bgRow      = "rgb(28, 30, 36)",
-    bgRowAlt   = "rgb(36, 39, 46)",
-    border     = "rgb(80, 90, 110)",
-    textName   = "#e0e6f0",
-    textQty    = "#7ec8e3",
-    textCond   = "#8a9bb5",
-    textDesc   = "#6a7a8a",
-}
-
 -- ------------------------------------------------------------
 -- CAPTURE STATE
 -- Uses the setTriggerStayOpen pattern — single named trigger
@@ -24,6 +13,7 @@ itemdb.inventory.capture = itemdb.inventory.capture or {
     lines  = {},
 }
 
+itemdb.inventory.data = itemdb.inventory.data or {}
 
 
 
@@ -93,13 +83,14 @@ function itemdb.inventory.parseLine(line)
     }
 end
 
+
+
 -- ------------------------------------------------------------
 -- TRIGGER SCRIPT
 -- Note: Trigger "InventoryCapture" is defined in triggers.json
 -- It fires on "You are carrying:" and calls itemdb.inventory.onInventoryLine()
+-- this is referenced by triggers\InventoryCapture.lua
 -- ------------------------------------------------------------
-
--- Inventory capture functions for the trigger system
 function itemdb.inventory.startCapture()
     cecho("<yellow>[Inventory] Starting capture...\n")
     itemdb.inventory.capture.active = true
@@ -107,8 +98,13 @@ function itemdb.inventory.startCapture()
     setTriggerStayOpen("Inventory Capture", 99)
 end
 
+
+-- ------------------------------------------------------------
+-- TRIGGER SCRIPT
+-- Note: Trigger "onInventoryLine" is defined in triggers.json
+-- It fires on every new inventory line, but only after the Inventory Capture is open and calls itemdb.inventory.onInventoryLine()
+-- ------------------------------------------------------------
 function itemdb.inventory.onInventoryLine()
-    -- cecho("onInventoryLine calleed!")
     if not itemdb.inventory.capture.active then
         return
     end
@@ -119,14 +115,8 @@ function itemdb.inventory.onInventoryLine()
     if trimmed == "" or trimmed == "You are carrying:" then
         return
     end
-    
-    -- cecho("<cyan>[Captured] " .. line .. "\n")
-    -- cecho("<cyan>[Captured]\n")
-
 
     -- erasing line from view
-   
-
     table.insert(itemdb.inventory.capture.lines, line)
 
     -- Every so often we COULD poll the users inventory to keep the UI up to date... 
@@ -137,16 +127,19 @@ function itemdb.inventory.onInventoryLine()
     --     deleteLine()
     -- end
 
-
     -- cecho("Is it a prompt?" .. isPrompt())
 
-    -- cecho("<red>CAPTURED LINE: ")
     setTriggerStayOpen("Inventory Capture", 1)
 end
 
+
+-- ------------------------------------------------------------
+-- TRIGGER SCRIPT
+-- Note: Trigger "endCapture" is defined in triggers.json
+-- It fires after the inventory parse as finished and we have found the prompt via regex
+-- ------------------------------------------------------------
 function itemdb.inventory.endCapture()
     if not itemdb.inventory.capture.active then
-        -- cecho("<red> capture not active\n")
         return
     end
     
@@ -167,39 +160,80 @@ function itemdb.inventory.endCapture()
         end
     end
 
-
-  
-
     itemdb.inventory.capture.lines = {}
 
     if #items > 0 then
         cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
         -- cecho("Items are ")
         itemdb.inventory.setData(items)
-
-        
     else
         cecho("<orange>[Inventory] No items parsed!\n")
     end
 end
 
 
-
+-- ------------------------------------------------------------
+-- setData
+-- ------------------------------------------------------------
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
-    -- itemdb.inventory.refresh()
-
+    
     itemdb.inventory.window.refresh()
 end
 
 
 
--- This is ran via trigger when inventory is captured fully
-function itemdb.inventory.updateNow()
-    itemdb.inventory.setData({})              
-    -- itemdb.inventory.refresh()                 
-    send("inv")                          
+-- called when sysExitEvent
+function itemdb.inventory.save()
+    local savedata = {
+        inventory = itemdb.inventory.data or {},
+        token = itemdb.token or ""
+    }
+    cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
+    table.save(itemdb.savePath, savedata)
 end
+
+
+-- called on sysLoadEvent and sysInstall, but will only run once
+function itemdb.inventory.initialize()
+    local savedata = {}
+    table.load(itemdb.savePath, savedata)
+
+    -- loading data from previous session
+    itemdb.inventory.data = savedata.inventory or {}
+    itemdb.token = savedata.token or ""
+
+    cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
+
+    itemdb.inventory.window.refresh()
+    cecho("<yellow>Inventory data loaded.\n")
+end
+
+
+
+
+
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", itemdb.inventory.initialize)
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb.inventory.initialize)
+registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.inventory.save)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -245,7 +279,6 @@ end
 -- ]])
 
 
-itemdb.inventory.data = itemdb.inventory.data or {}
 
 
 
@@ -369,52 +402,3 @@ itemdb.inventory.data = itemdb.inventory.data or {}
 --     -- Optional: make contentLabel scrollable if too tall
 --     -- or resize it: itemdb.inventory.contentLabel:resizeToFitContents() if supported
 -- end
-
-
--- ------------------------------------------------------------
--- setData
--- ------------------------------------------------------------
-function itemdb.inventory.setData(newData)
-    itemdb.inventory.data = newData or {}
-    
-    -- itemdb.inventory.refresh()
-    itemdb.inventory.window.refresh()
-end
-
-
-
--- called when sysExitEvent
-function itemdb.inventory.save()
-    local savedata = {
-        inventory = itemdb.inventory.data or {},
-        token = itemdb.token or ""
-    }
-    cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
-    table.save(itemdb.savePath, savedata)
-end
-
-
--- called on sysLoadEvent and sysInstall, but will only run once
-function itemdb.inventory.initialize()
- 
-    local savedata = {}
-    table.load(itemdb.savePath, savedata)
-
-    itemdb.inventory.data = savedata.inventory or {}
-    itemdb.token = savedata.token or ""
-
-    cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
-
-    -- itemdb.inventory.refresh()
-    itemdb.inventory.window.refresh()
-    cecho("<yellow>Inventory data loaded.\n")
-
-end
-
-
-
-
-
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", itemdb.inventory.initialize)
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb.inventory.initialize)
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.inventory.save)
