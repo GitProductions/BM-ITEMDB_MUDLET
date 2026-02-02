@@ -287,7 +287,8 @@ function itemdb.inventory.refresh()
     text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
 
 
-    itemdb.inventory.window.box.label:echo(text)
+    -- itemdb.inventory.window.box.label:echo(text)
+    itemdb.inventory.contentLabel:echo(text)
 end
 
 
