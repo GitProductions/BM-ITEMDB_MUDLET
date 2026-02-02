@@ -97,8 +97,11 @@ function itemdb.inventory.window.refresh()
     for i, item in ipairs(itemdb.inventory.data) do
         local yOff = (i - 1) * 30
 
-        -- build label text safely
-        local label_text = item.name .. " (" .. item.condition .. ")"
+        -- build label text safely - handle items without condition
+        local label_text = item.name
+        if item.condition then
+            label_text = label_text .. " (" .. item.condition .. ")"
+        end
 
         if item.quantity and item.quantity >= 2 then
             label_text = label_text .. " <span style='color: " .. itemdb.inventory.colors.textQty .. "'>" .. "[" .. item.quantity .. "]</span>"

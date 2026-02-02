@@ -1,6 +1,4 @@
-
-itemdb.savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
-
+itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
 
 -- ------------------------------------------------------------
 -- CAPTURE STATE
@@ -10,12 +8,10 @@ itemdb.savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemd
 -- ------------------------------------------------------------
 itemdb.inventory.capture = itemdb.inventory.capture or {
     active = false,
-    lines  = {},
+    lines = {}
 }
 
 itemdb.inventory.data = itemdb.inventory.data or {}
-
-
 
 -- Sample in game itemdb.inventory
 -- You are carrying:
@@ -28,62 +24,62 @@ itemdb.inventory.data = itemdb.inventory.data or {}
 --  a backpack (excellent)
 --  a bag (excellent)
 
-
 -- ------------------------------------------------------------
 -- PARSER for Inventory
 -- Handles:
 --   a scroll of identify (excellent)
 --   a bottle (excellent) [2]
 --   a godstone shard of Makilor  (excellent)..It hums powerfully
+--   a wolf claw..It glows softly
+-- Format: name [(condition)] [..description] [[quantity]]
+-- Strip everything after .. (descriptions/flags), then extract condition from () and quantity from []
 -- ------------------------------------------------------------
 function itemdb.inventory.parseLine(line)
     local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
 
+    -- Reject empty lines, headers, and prompts
     if trimmed == "" or trimmed:match("^You are carrying:") then
         return nil
     end
+    
+    -- Reject prompt lines (format: < number number number >)
+    if trimmed:match("^<[%s%d]+>$") then
+        return nil
+    end
 
-    local name      = trimmed
+    local name = trimmed
     local condition = nil
-    local quantity  = 1
-    local desc      = nil
+    local quantity = 1
 
-    -- pull quantity [n] FIRST
+    -- FIRST: Remove everything after .. (descriptions like "It glows softly", "It hums powerfully")
+    name = name:gsub("%.%..*$", "")
+
+    -- SECOND: Extract quantity [n] - always comes last
     local qtyMatch = name:match("%[(%d+)%]")
     if qtyMatch then
         quantity = tonumber(qtyMatch)
-        name     = name:gsub("%s*%[%d+%]", "")
+        name = name:gsub("%s*%[%d+%]%s*$", "")
     end
 
-    -- pull trailing description after .. SECOND
-    local descMatch = name:match("%.%.(.+)$")
-    if descMatch then
-        desc = descMatch:gsub("^%s+", "")
-        name = name:gsub("%s*%.%.+$", "")
-    end
-
-    -- pull condition (anything in parentheses) THIRD
+    -- THIRD: Extract condition (anything in parentheses)
     local condMatch = name:match("%([^)]+%)")
     if condMatch then
         condition = condMatch:match("%(([^)]+)%)")
-        name      = name:gsub("%s*%([^)]+%)%s*$", "")
+        name = name:gsub("%s*%([^)]+%)%s*$", "")
     end
 
-    -- clean up whitespace
+    -- FOURTH: Clean up whitespace
     name = name:gsub("%s+$", "")
 
-    -- strip leading article for cleaner display
+    -- FIFTH: Strip leading article for cleaner display
     local cleanName = name:gsub("^[Aa]n? ", ""):gsub("^[Tt]he ", "")
 
     return {
-        name      = cleanName,
+        name = cleanName,
         condition = condition,
-        quantity  = quantity,
-        desc      = desc,
+        quantity = quantity
     }
 end
-
-
 
 -- ------------------------------------------------------------
 -- TRIGGER SCRIPT
@@ -92,12 +88,14 @@ end
 -- this is referenced by triggers\InventoryCapture.lua
 -- ------------------------------------------------------------
 function itemdb.inventory.startCapture()
-    cecho("<yellow>[Inventory] Starting capture...\n")
+    if itemdb.state.debugMode then
+        cecho("<yellow>[Inventory] Starting capture...\n")
+    end
+
     itemdb.inventory.capture.active = true
-    itemdb.inventory.capture.lines  = {}
+    itemdb.inventory.capture.lines = {}
     setTriggerStayOpen("Inventory Capture", 99)
 end
-
 
 -- ------------------------------------------------------------
 -- TRIGGER SCRIPT
@@ -108,9 +106,9 @@ function itemdb.inventory.onInventoryLine()
     if not itemdb.inventory.capture.active then
         return
     end
-    
+
     local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
-    
+
     -- Skip the header line and blank lines
     if trimmed == "" or trimmed == "You are carrying:" then
         return
@@ -132,7 +130,6 @@ function itemdb.inventory.onInventoryLine()
     setTriggerStayOpen("Inventory Capture", 1)
 end
 
-
 -- ------------------------------------------------------------
 -- TRIGGER SCRIPT
 -- Note: Trigger "endCapture" is defined in triggers.json
@@ -142,8 +139,8 @@ function itemdb.inventory.endCapture()
     if not itemdb.inventory.capture.active then
         return
     end
-    
-    if itemdb.inventory.debug then
+
+    if itemdb.state.debugMode then
         cecho("<yellow>[Inventory] Ending capture - processing " .. #itemdb.inventory.capture.lines .. " lines\n")
     end
 
@@ -163,25 +160,26 @@ function itemdb.inventory.endCapture()
     itemdb.inventory.capture.lines = {}
 
     if #items > 0 then
-        cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
+        if itemdb.state.debugMode then
+            cecho("<green>[Inventory] Loaded " .. #items .. " items\n")
+        end
         -- cecho("Items are ")
         itemdb.inventory.setData(items)
     else
-        cecho("<orange>[Inventory] No items parsed!\n")
+        if itemdb.state.debugMode then
+            cecho("<orange>[Inventory] No items parsed!\n")
+        end
     end
 end
-
 
 -- ------------------------------------------------------------
 -- setData
 -- ------------------------------------------------------------
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
-    
+
     itemdb.inventory.window.refresh()
 end
-
-
 
 -- called when sysExitEvent
 function itemdb.inventory.save()
@@ -193,7 +191,6 @@ function itemdb.inventory.save()
     table.save(itemdb.savePath, savedata)
 end
 
-
 -- called on sysLoadEvent and sysInstall, but will only run once
 function itemdb.inventory.initialize()
     local savedata = {}
@@ -203,41 +200,16 @@ function itemdb.inventory.initialize()
     itemdb.inventory.data = savedata.inventory or {}
     itemdb.token = savedata.token or ""
 
-    cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
-
     itemdb.inventory.window.refresh()
-    cecho("<yellow>Inventory data loaded.\n")
+
+    if itemdb.state.debugMode then
+        cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
+    end
 end
-
-
-
-
 
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", itemdb.inventory.initialize)
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb.inventory.initialize)
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.inventory.save)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 -- ------------------------------------------------------------
 -- Inventory Window
@@ -260,7 +232,6 @@ registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", it
 
 -- itemdb.inventory.container:show()
 
-
 -- -- ------------------------------------------------------------
 -- -- Single persistent content label
 -- -- ------------------------------------------------------------
@@ -278,19 +249,12 @@ registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", it
 --     qproperty-alignment: 'AlignTop | AlignLeft';
 -- ]])
 
-
-
-
-
-
-
 -- ------------------------------------------------------------
 -- Refresh: building ONE big formatted string and echoing it
 -- this looks great, but results in a not so great user experience as the contents isnt scrollable, and we cant use buttons directly
 -- ------------------------------------------------------------
 -- function itemdb.inventory.refresh()
 --     -- cecho("Inventory refresh triggered - " .. tostring(#itemdb.inventory.data) .. " items\n")
- 
 
 --     if #itemdb.inventory.data == 0 then
 --         local placeholder = [[
@@ -304,17 +268,17 @@ registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", it
 --     local text = ""
 --     for i, item in ipairs(itemdb.inventory.data) do
 --         local rowBg = (i % 2 == 0) and itemdb.inventory.colors.bgRowAlt or itemdb.inventory.colors.bgRow
-        
+
 --         -- Items Quanity Styling
 --         local qtyStr  = (item.quantity > 1) and 
 --             (" <span style='color:" .. itemdb.inventory.colors.textQty .. "; font-family:monospace; font-weight:bold;'>x" .. item.quantity .. "</span>") 
 --             or ""
-        
+
 --         -- Items Condition Styling
 --         local condStr = item.condition and 
 --             (" <span style='color:" .. itemdb.inventory.colors.textCond .. "; font-size:10px;'>(" .. item.condition .. ")</span>") 
 --             or ""
-        
+
 --         -- Items Short Description styling
 --         local descStr = item.desc and 
 --             (" <span style='color:" .. itemdb.inventory.colors.textDesc .. "; font-size:9px;'>- " .. item.desc .. "</span>") 
@@ -322,7 +286,6 @@ registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", it
 
 --         -- how to make button attached to item row to allow users to click and 'look item.name'?  in future maybe we can reference the itemDB and find precise keywords for various actions and controls
 --         -- attempted it but
-        
 
 --         -- Each item on its own "row" with line break + padding simulation
 --         text = text .. [[
@@ -335,11 +298,9 @@ registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", it
 --     -- Wrap everything in a container for better spacing
 --     text = [[<div style="padding: 4px 0;">]] .. text .. [[</div>]]
 
-
 --     -- itemdb.window.box.label:echo(text)
 --     itemdb.inventory.contentLabel:echo(text)
 -- end
-
 
 -- another example but it just not working properly.. cant make each row only 10px for example
 -- everything stretches when the window does.. it looks terrible...

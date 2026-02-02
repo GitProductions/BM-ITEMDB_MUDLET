@@ -19,5 +19,12 @@
               "regex": "^itemdb.set\\s+(.+)$",
               "script": "",
               "isFolder": "no"
+       },
+              {
+              "name": "ITEM-DB-Debug-Mode",
+              "isActive": "yes",
+              "regex": "^itemdb.debug$",
+              "script": "",
+              "isFolder": "no"
        }
 ]

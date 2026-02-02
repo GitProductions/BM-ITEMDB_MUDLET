@@ -48,8 +48,15 @@ itemdb.state = itemdb.state or {
     submitTimer = nil,
     searchCurrentUrl = nil,
     searchCurrentQuery = nil,
-    searchHandlersRegistered = false
+    searchHandlersRegistered = false,
+    debugMode = false
 }
+
+function itemdb.debug()
+    cecho("\n<yellow>[ITEMDB] <gray>- Debug mode is " .. (itemdb.state.debugMode and "<red>OFF" or "<green>ON") .. "\n")
+    -- debug toggle
+    itemdb.state.debugMode = not itemdb.state.debugMode
+end
 
 -- Used to reset captured lines after submission or cancellation
 local function resetCaptureLines()
@@ -60,13 +67,13 @@ end
 -- When an identify line is received, capture it
 function itemdb.startIdentifyCapture()
     if itemdb.state.selectingInventoryItem then
-        cecho("<orange>[New identify detected - cancelling previous submission]\n")
+        cecho("<yellow>[ITEMDB] <gray>- <orange>[New identify detected - cancelling previous submission]\n")
         itemdb.cancelItemSelection(true)
     end
 
     itemdb.state.captureActive = true
     resetCaptureLines()
-    cecho("<gray>[Identify capture started...]\n")
+    cecho("<yellow>[ITEMDB] <gray>- [Identify capture started...]\n")
     setTriggerStayOpen("IdentifyStart", 99)
 end
 
@@ -113,7 +120,7 @@ function itemdb.finishIdentifyCapture()
         end
         cecho("<cyan>+---------------------------------------------------+\n\n")
     else
-        cecho("<orange>No useful lines captured?\n")
+        cecho("<yellow>[ITEMDB] <orange>No useful lines captured?\n")
     end
 
     -- expandAlias("capture-item-button")
@@ -156,7 +163,7 @@ function itemdb.startItemSelection(timeoutSeconds)
 
     itemdb.state.submitTimer = tempTimer(timeoutSeconds or 15, function()
         if itemdb.state.selectingInventoryItem then
-            cecho("\n<red>[TIMEOUT] Item submission cancelled automatically.\n")
+            cecho("\n<yellow>[ITEMDB] - <red>[TIMEOUT] Item submission cancelled automatically.\n")
             itemdb.cancelItemSelection(true)
         end
     end)
@@ -177,14 +184,15 @@ end
 
 function itemdb.submitCapturedItem(itemLine)
     if not itemdb.state.selectingInventoryItem then
-        cecho("<red>No item selection in progress.\n")
+        cecho("Selecting " ..  itemLine .. "\n")
+        cecho("<yellow>[ITEMDB] <gray>- <red>No item selection in progress.\n")
 
         -- This is when we can either hide the buttons or prompt the user to identify an item first?
         return
     end
 
     if not itemdb.state.captureLines or #itemdb.state.captureLines == 0 then
-        cecho("<red>ERROR: No identify data captured! Please identify an item first.\n")
+        cecho("<yellow>[ITEMDB] <gray>- <red>ERROR: No identify data captured! Please identify an item first.\n")
         return
     end
 
@@ -206,7 +214,7 @@ function itemdb.submitCapturedItem(itemLine)
     })
 
     postHTTP(body, url, headers)
-    cecho("<cyan>[ITEM DB] Submitted successfully!\n")
+    cecho("<yellow>[ITEMDB] <gray>- <cyan>Submitted successfully!\n")
 
     -- assuring cleanup
     resetCaptureLines()
@@ -224,12 +232,12 @@ local function handleSearchSuccess(event, respUrl, body)
 
     local ok, data = pcall(yajl.to_value, body)
     if not ok or type(data) ~= "table" or type(data.items) ~= "table" then
-        cecho("<red>Failed to parse results.\n")
+        cecho("<yellow>[ITEMDB] <gray>- <red>Failed to parse results.\n")
         return
     end
 
     if #data.items == 0 then
-        cecho("<khaki>No items found.\n\n")
+        cecho("<yellow>[ITEMDB] <gray>- <khaki>No items found.\n\n")
         return
     end
 
@@ -255,7 +263,7 @@ local function handleSearchError(event, errMsg, respUrl)
     if respUrl ~= itemdb.state.searchCurrentUrl then
         return
     end
-    cecho("<red>Search failed: " .. (errMsg or "unknown") .. "\n")
+    cecho("<yellow>[ITEMDB] <gray>- <red>Search failed: " .. (errMsg or "unknown") .. "\n")
 end
 
 -- Registers HTTP handlers for search functionality
@@ -274,7 +282,7 @@ end
 function itemdb.searchItems(query)
     query = (query or ""):trim()
     if query == "" then
-        cecho("<orange>Usage: search-db <item name / keyword>\n")
+        cecho("<yellow>[ITEMDB] <gray>- <orange>Usage: search-db <item name / keyword>\n")
         return
     end
 
@@ -288,7 +296,7 @@ function itemdb.searchItems(query)
 
     registerSearchHandlers()
 
-    cecho(string.format("<gray>Searching for '<wheat>%s<gray>'...\n", query))
+    cecho(string.format("<yellow>[ITEMDB] <gray>- <gray>Searching for '<wheat>%s<gray>'...\n", query))
     tempTimer(0.05, function()
         getHTTP(url)
     end)

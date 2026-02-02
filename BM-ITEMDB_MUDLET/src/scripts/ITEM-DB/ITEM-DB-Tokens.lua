@@ -72,17 +72,7 @@ function itemdb.verifyToken(token)
     -- local url = "http://localhost:3000/api/tokens/verify"
     local headers = {
         ["Content-Type"] = "application/json"
-        -- ["Authorization"] = "Bearer " .. itemdb.token
     }
-
-    -- LOCAL TOKEN = 853569e7ea99cb1e946e87f315982450b5a25c41ca8111c27cb4d615fe7817e5
-
-    -- CLOUD TOKEN =  dcaf022e9aaa807ed877494e5f1a4413255312866fba8e3d9a3137990e993810
-
-    -- postHTTP("6145b16ea108b91f3b16223d0828a64881efcb98b270473113603bfebb1f4b83", url, headers)
-
-    -- we preset the token here, but revoke it if failed
-    -- itemdb.token = token
 
     postHTTP(token, url, headers)
 end
@@ -98,15 +88,12 @@ function itemdb.getToken()
 end
 
 -- Set User Token
+-- user token gets set, but revoked if the verification fails
 function itemdb.setToken(token)
     if not token then
         cecho("<gray>ITEM-DB:<red> NO TOKEN FOUND, Check and try again")
     end
-    
-    -- itemdb.token = token -- we set it now, but after checking/verifying we may revoke it
 
-    -- cecho("User token set to: " .. itemdb.token .. "\n")
-    -- itemdb.verifyToken(token)
     itemdb.checkToken(token)
 
 end
