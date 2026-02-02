@@ -374,36 +374,39 @@ end
 -- ------------------------------------------------------------
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
-
-
+    
     itemdb.inventory.refresh()
     itemdb.inventory.window.refresh()
-
-
-    -- itemdb.inventory.save()
-
-    
 end
 
 
 
 -- called when sysExitEvent
 function itemdb.inventory.save()
-    cecho("<yellow>Attempting a save\n")
-    if itemdb.inventory.data then
-        cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
-        table.save(itemdb.savePath, itemdb.inventory.data)
-    end
+    local savedata = {
+        inventory = itemdb.inventory.data or {},
+        token = itemdb.token or ""
+    }
+    cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
+    table.save(itemdb.savePath, savedata)
 end
+
 
 -- called on sysLoadEvent and sysInstall, but will only run once
 function itemdb.inventory.initialize()
-    cecho("<yellow>Attempting to load inventory data...\n")
-    table.load(itemdb.savePath, itemdb.inventory.data)
+ 
+    local savedata = {}
+    table.load(itemdb.savePath, savedata)
 
-    cecho("<yellow>Inventory data loaded.\n" .. #itemdb.inventory.data .. " items.\n")
-    itemdb.inventory.refresh() 
+    itemdb.inventory.data = savedata.inventory or {}
+    itemdb.token = savedata.token or ""
+
+    cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
+
+    itemdb.inventory.refresh()
     itemdb.inventory.window.refresh()
+    cecho("<yellow>Inventory data loaded.\n")
+
 end
 
 
