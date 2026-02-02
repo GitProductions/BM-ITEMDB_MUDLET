@@ -3,6 +3,34 @@ itemdb.configFile = "bmud_itemdb.lua"
 itemdb.packageName = "BM-ITEMDB"
 itemdb.packagePath = getMudletHomeDir()
 
+
+
+
+
+local function killMDK()
+  for pkgName, _ in pairs(package.loaded) do
+    if pkgName:find("MDK") then
+      debugc("Uncaching lua package " .. pkgName)
+      package.loaded[pkgName] = nil
+    end
+  end
+end
+local function create_helper()
+  if MDKhelper then MDKhelper:stop() end
+  MDKhelper = Muddler:new({
+    path = "C:\\Users\\GitPC\\Documents\\GitHub\\BM-ITEMDB_MUDLET\\BM-ITEMDB_MUDLET",
+    watch = true,
+
+    postremove = killMDK,
+  })
+end
+
+if not MDKhelper then
+  registerAnonymousEventHandler("sysLoadEvent", create_helper)
+end
+
+
+
 itemdb = itemdb or {}
 itemdb.inventory = {name = "Open Inventory....", condition = "", quantity = 1, desc = nil}
 itemdb.state = itemdb.state or {
