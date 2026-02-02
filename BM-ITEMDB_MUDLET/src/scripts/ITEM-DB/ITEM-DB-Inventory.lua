@@ -1,3 +1,4 @@
+
 itemdb.savePath = itemdb.packagePath .. "/" ..itemdb.packageName .. "/" .. itemdb.configFile
 
 
@@ -186,17 +187,18 @@ end
 
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
-    itemdb.inventory.refresh()
+    -- itemdb.inventory.refresh()
+
+    itemdb.inventory.window.refresh()
 end
 
 
 
 -- This is ran via trigger when inventory is captured fully
 function itemdb.inventory.updateNow()
-    itemdb.inventory.setData({})               -- clear old data + show placeholder
-    itemdb.inventory.refresh()                 -- redraw immediately
-    send("inv")                           -- or whatever your itemdb.inventory command is
-    -- The trigger will fire, capture fresh lines, parse, and setData() automatically
+    itemdb.inventory.setData({})              
+    -- itemdb.inventory.refresh()                 
+    send("inv")                          
 end
 
 
@@ -206,41 +208,41 @@ end
 -- ------------------------------------------------------------
 -- Inventory Window
 -- ------------------------------------------------------------
-itemdb.inventory.container = itemdb.inventory.container or Adjustable.Container:new({
-    name          = "inventoryContainer",
-    x             = "75%",
-    y             = "2%",
-    width         = "22%",
-    height        = "35%",
-    titleText     = "Inventory",
-    titleTxtColor = "#c8d6e5",
-    adjLabelstyle = [[
-        background-color: rgb(20, 22, 28);
-        border: 1px solid rgb(80, 90, 110);
-        border-radius: 4px;
-    ]],
+-- itemdb.inventory.container = itemdb.inventory.container or Adjustable.Container:new({
+--     name          = "inventoryContainer",
+--     x             = "75%",
+--     y             = "2%",
+--     width         = "22%",
+--     height        = "35%",
+--     titleText     = "Inventory",
+--     titleTxtColor = "#c8d6e5",
+--     adjLabelstyle = [[
+--         background-color: rgb(20, 22, 28);
+--         border: 1px solid rgb(80, 90, 110);
+--         border-radius: 4px;
+--     ]],
 
-})
+-- })
 
-itemdb.inventory.container:show()
+-- itemdb.inventory.container:show()
 
 
--- ------------------------------------------------------------
--- Single persistent content label
--- ------------------------------------------------------------
-itemdb.inventory.contentLabel = itemdb.inventory.contentLabel or Geyser.Label:new({
-    name   = "itemdb.inventory.content",
-    x      = 0,
-    y      = 0,
-    width  = "100%",
-    height = "100%",
-}, itemdb.inventory.container)
+-- -- ------------------------------------------------------------
+-- -- Single persistent content label
+-- -- ------------------------------------------------------------
+-- itemdb.inventory.contentLabel = itemdb.inventory.contentLabel or Geyser.Label:new({
+--     name   = "itemdb.inventory.content",
+--     x      = 0,
+--     y      = 0,
+--     width  = "100%",
+--     height = "100%",
+-- }, itemdb.inventory.container)
 
-itemdb.inventory.contentLabel:setStyleSheet([[
-    background-color: rgb(20, 22, 28);
-    padding: 8px;
-    qproperty-alignment: 'AlignTop | AlignLeft';
-]])
+-- itemdb.inventory.contentLabel:setStyleSheet([[
+--     background-color: rgb(20, 22, 28);
+--     padding: 8px;
+--     qproperty-alignment: 'AlignTop | AlignLeft';
+-- ]])
 
 
 itemdb.inventory.data = itemdb.inventory.data or {}
@@ -375,7 +377,7 @@ end
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
     
-    itemdb.inventory.refresh()
+    -- itemdb.inventory.refresh()
     itemdb.inventory.window.refresh()
 end
 
@@ -403,7 +405,7 @@ function itemdb.inventory.initialize()
 
     cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
 
-    itemdb.inventory.refresh()
+    -- itemdb.inventory.refresh()
     itemdb.inventory.window.refresh()
     cecho("<yellow>Inventory data loaded.\n")
 

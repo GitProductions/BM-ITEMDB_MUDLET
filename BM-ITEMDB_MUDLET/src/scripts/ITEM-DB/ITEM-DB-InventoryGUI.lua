@@ -1,3 +1,8 @@
+-- ------------------------------------------------------------
+-- Inventory Window
+-- ------------------------------------------------------------
+
+
 ------- Issues..
 -- 1.  Sometimes the ui needs to be moved/adjusted for it to initially populate the data its been given.
 -- 2. After reloading the module, it causes the old labels/buttons to still remain and cover parts of the screen until restarting the users profile

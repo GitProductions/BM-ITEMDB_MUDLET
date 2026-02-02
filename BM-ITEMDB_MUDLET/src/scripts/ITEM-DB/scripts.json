@@ -18,13 +18,13 @@
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB-Inventory",
+              "name": "ITEM-DB-InventoryGUI",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "TEST_WINDOW",
+              "name": "ITEM-DB-Inventory",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
