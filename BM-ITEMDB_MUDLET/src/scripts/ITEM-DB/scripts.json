@@ -28,5 +28,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "BM-ITEMDB_MUDLET",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

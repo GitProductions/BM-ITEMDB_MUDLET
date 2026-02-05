@@ -3,43 +3,42 @@ itemdb.configFile = "bmud_itemdb.lua"
 itemdb.packageName = "BM-ITEMDB"
 itemdb.packagePath = getMudletHomeDir()
 
-
-
-
 ----------------------------------
 --  FOR DEVLEOPMENT USE ONLY
 
 local function killMDK()
-  for pkgName, _ in pairs(package.loaded) do
-    if pkgName:find("MDK") then
-      debugc("Uncaching lua package " .. pkgName)
-      package.loaded[pkgName] = nil
+    for pkgName, _ in pairs(package.loaded) do
+        if pkgName:find("MDK") then
+            debugc("Uncaching lua package " .. pkgName)
+            package.loaded[pkgName] = nil
+        end
     end
-  end
 end
 local function create_helper()
-  if MDKhelper then MDKhelper:stop() end
-  MDKhelper = Muddler:new({
-    path = "C:\\Users\\GitPC\\Documents\\GitHub\\BM-ITEMDB_MUDLET\\BM-ITEMDB_MUDLET",
-    watch = true,
+    if MDKhelper then
+        MDKhelper:stop()
+    end
+    MDKhelper = Muddler:new({
+        path = "C:\\Users\\GitPC\\Documents\\GitHub\\BM-ITEMDB_MUDLET\\BM-ITEMDB_MUDLET",
+        watch = true,
 
-    postremove = killMDK,
-  })
+        postremove = killMDK
+    })
 end
 
 if not MDKhelper then
-  registerAnonymousEventHandler("sysLoadEvent", create_helper)
+    registerAnonymousEventHandler("sysLoadEvent", create_helper)
 end
 
 ----------------------------------
 
-
-
-
-
-
 itemdb = itemdb or {}
-itemdb.inventory = {name = "Open Inventory....", condition = "", quantity = 1, desc = nil}
+itemdb.inventory = {
+    name = "Open Inventory....",
+    condition = "",
+    quantity = 1,
+    desc = nil
+}
 itemdb.state = itemdb.state or {
     captureActive = false,
     captureLines = {},
@@ -129,7 +128,7 @@ function itemdb.finishIdentifyCapture()
     -- if selecting yes, the users inventory is opened and parsed and we attach buttons to each line..
     -- we now want to move away from this and instead make the buttons in our UI window appear for the user.. and or we need to show the window
     itemdb.askUser()
-    
+
     -- resetCaptureLines()
 end
 
@@ -141,6 +140,11 @@ function itemdb.askUser()
 
         itemdb.startItemSelection(20)
         send("inv")
+
+
+        -- Showing the inventory window
+        itemdb.inventory.window:show()
+
     end, "Item-DB: Click to submit item", true)
 
     cecho("  ") -- spacing
@@ -182,9 +186,27 @@ function itemdb.cancelItemSelection(clearCapture)
     end
 end
 
+function itemdb.submitSAMPLEDATA()
+    cecho("Submitting sample data...\n")
+    local sampledata =
+        "an oily black ring of unknown metalTES (excellent)\nObject 'ring black oily unknown metalTEST', Item type: worn\nThis item's ego is of trifling proportions.\nThis item can always be repaired.\nItem is: metal\nWetest: 1\nAffects:\nType:  mana  Value: 46\nType: save_all  Value: 6\nType: mana_regen  Value: 3"
+
+    local url = "http://localhost:3000/api/items"
+    local headers = {
+        ["Content-Type"] = "application/json",
+        ["Authorization"] = "Bearer " .. itemdb.token
+    }
+
+    local body = yajl.to_string({
+        raw = sampledata
+    })
+
+    postHTTP(body, url, headers)
+end
+
 function itemdb.submitCapturedItem(itemLine)
     if not itemdb.state.selectingInventoryItem then
-        cecho("Selecting " ..  itemLine .. "\n")
+        cecho("Selecting " .. itemLine .. "\n")
         cecho("<yellow>[ITEMDB] <gray>- <red>No item selection in progress.\n")
 
         -- This is when we can either hide the buttons or prompt the user to identify an item first?
@@ -219,6 +241,7 @@ function itemdb.submitCapturedItem(itemLine)
     -- assuring cleanup
     resetCaptureLines()
     itemdb.cancelItemSelection(true)
+    itemdb.inventory.window:hide()
 end
 
 -- Search helpers
@@ -243,8 +266,11 @@ local function handleSearchSuccess(event, respUrl, body)
 
     for i, item in ipairs(data.items) do
         local name = item.name or "<unknown>"
-        local owner = item.owner or "?"
-        cecho(string.format("<light_blue>[%d] <wheat>%s <gray>(submitted by %s)\n", i, name, owner))
+        
+        -- local owner = item.owner or "?"
+        -- contributors is a list 
+
+        cecho(string.format("<light_blue>[%d] <wheat>%s ", i, name))
 
         if type(item.raw) == "table" and #item.raw > 0 then
             for _, line in ipairs(item.raw) do
@@ -253,6 +279,9 @@ local function handleSearchSuccess(event, respUrl, body)
         else
             cecho("<light_blue>  > <khaki>(No data available)\n")
         end
+
+        local contributors = table.concat(item.contributors or {}, " - ")
+        cecho(string.format("<gray>(Contributors: %s)\n", contributors))
 
         cecho("<light_blue>------------------------------------------------------------\n")
     end
@@ -303,16 +332,117 @@ function itemdb.searchItems(query)
 end
 
 
+function itemdb.help()
+    cecho("<spring_green>───────────────────── ItemDB Commands ─────────────────────\n\n")
+  
+
+    local commands = {
+        {"itemdb.set <token>",      "set your user token for item submissions"},
+        {"itemdb.show <token>",      "show your current user token"},
+
+        -- {"add",                "add new item interactively"},
+        {"itemdb.search <text>",      "search items by name/keyword"},
+
+        {"itemdb.debug",      "enable debug mode for logging errors"},
+
+        {"itemdb",           "show this help"},
+        -- {"reload",             "force reload database"},
+    }
+
+    local maxLen = 0
+    for _, entry in ipairs(commands) do
+        maxLen = math.max(maxLen, #entry[1])
+    end
+
+    for _, entry in ipairs(commands) do
+        cecho(string.format("<light_blue>  %- "..maxLen.."s  <gray>→ <wheat>%s\n",
+            entry[1], entry[2]))
+    end
+
+    cecho("\n<spring_green>────────────────────────────────────────────────────────────\n")
+end
+    
 
 
 
 
 
 
+-- function handlePut(commandSent)
+--     if commandSent:sub(1, 4) ~= "put " then
+--         return
+--     end
+--     cecho("Putting item in..\n")
+
+--     -- split into words
+--     local parts = {}
+--     for word in commandSent:gmatch("%S+") do
+--         table.insert(parts, word)
+--     end
+
+--     -- parts[1] = "put"
+--     -- parts[2] = item
+--     -- parts[3] = "in" OR container
+--     -- parts[4] = container (if "in" was used)
+
+--     local itemPut = parts[2]
+--     local containerPut
+
+--     if parts[3] == "in" then
+--         containerPut = parts[4]
+--     else
+--         containerPut = parts[3]
+--     end
+
+--     if not itemPut or not containerPut then
+--         cecho("<red>Could not parse put command.\n")
+--         return
+--     end
+
+--     cecho(string.format("<yellow>Item: <white>%s  <yellow>Container: <white>%s\n", itemPut, containerPut))
+-- end
+
+-- function handleDataInput(eventName, commandSent)
+--     if type(commandSent) ~= "string" then
+--         return
+--     end
+
+--     -- normalize
+--     local cmd = commandSent:lower():match("^%s*(%S+)")
+
+--     if not cmd then
+--         return
+--     end
 
 
+--     ----------------------------------------------------------------
+--     -- PUT
+--     ----------------------------------------------------------------
+--     if cmd == "put" then
+--         handlePut(commandSent)
+--         return
+--     end
+
+--     ----------------------------------------------------------------
+--     -- GET
+--     ----------------------------------------------------------------
+--     -- if cmd == "get" then
+--     --     handleGet(commandSent)
+--     --     return
+--     -- end
+
+--     ----------------------------------------------------------------
+--     -- WEAR
+--     -- ----------------------------------------------------------------
+--     -- if cmd == "wear" then
+--     --     handleWear(commandSent)
+--     --     return
+--     -- end
 
 
+-- end
+
+-- registerAnonymousEventHandler("sysDataSendRequest", handleDataInput)
 
 -- EOF ITEM-DB-Core.lua
 

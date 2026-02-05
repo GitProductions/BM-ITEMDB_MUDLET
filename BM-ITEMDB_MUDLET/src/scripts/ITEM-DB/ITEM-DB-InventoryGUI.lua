@@ -23,7 +23,7 @@ itemdb.inventory.colors = {
 
 
 itemdb.inventory.window = itemdb.inventory.window or  Adjustable.Container:new({
-    name = "myWindow",
+    name = "itemdb.inventory.window",
     x = "75%",
     y = "2%",
     width = "22%",

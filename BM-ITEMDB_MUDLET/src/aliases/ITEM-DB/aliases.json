@@ -14,13 +14,27 @@
               "isFolder": "no"
        },
        {
+              "name": "ITEM-DB token Check",
+              "isActive": "yes",
+              "regex": "^itemdb.show$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "ITEM-DB token setter",
               "isActive": "yes",
               "regex": "^itemdb.set\\s+(.+)$",
               "script": "",
               "isFolder": "no"
        },
-              {
+       {
+              "name": "ITEM-DB Help",
+              "isActive": "yes",
+              "regex": "^itemdb$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "ITEM-DB-Debug-Mode",
               "isActive": "yes",
               "regex": "^itemdb.debug$",

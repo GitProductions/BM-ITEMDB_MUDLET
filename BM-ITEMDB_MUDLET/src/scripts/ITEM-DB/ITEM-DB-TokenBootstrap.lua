@@ -69,13 +69,51 @@ if not itemdb.tokenInstallHandlerRegistered then
 end
 
 local function handleUninstallEvent(...)
-    cecho("<spring_green>[ITEM DB] Goodbye! The helper package has been removed.\n")
-    cecho("<spring_green>  Reinstall and run <white>itemdb.set YOUR_TOKEN<spring_green> to re-enable submissions.\n")
+    cecho("<spring_green>-------------------- ItemDB - Uninstalled --------------------\n\n")
+
+    cecho("<wheat>Thanks for using ItemDB!\n")
+
+    cecho("<light_blue>Re-install in one click:\n")
+
+    local reinstallUrl = "https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage"
+
+    -- Option 1: Direct install link (preferred - Mudlet will download & install automatically)
+    cecho("<light_blue>→ ")
+    echoLink(
+        "Re-Install ItemDB now!",
+        [[installPackage("]] .. reinstallUrl .. [[")]],
+        "Click to automatically download and reinstall ItemDB",
+        true
+    )
+    cecho("\n\n")
+
+    -- Option 2: Fallback - copy/open the URL if they prefer manual install
+    cecho("<light_blue>→ Or click here to open/download the .mpackage file: ")
+    echoLink(
+        "" .. reinstallUrl,
+        reinstallUrl,
+        "Opens the direct download link in your browser",
+        true
+    )
+    cecho("\n\n")
+
+    cecho("<gray>(Mudlet will handle the install automatically if you use the first link)\n\n")
+
+    cecho("<spring_green>------------------------------------------------------------\n")
+
+    -- Cleanup flags as before
     itemdb.tokenWelcomeShown = false
     itemdb.tokenBootPrompted = false
 end
+
 
 if not itemdb.tokenUninstallHandlerRegistered then
     registerNamedEventHandler("itemdb.token", "itemdbTokenUninstall", "sysUninstall", handleUninstallEvent)
     itemdb.tokenUninstallHandlerRegistered = true
 end
+
+
+-- handle install event
+-- registerNamedEventHandler("itemdb.welcome", "itemdbWelcomeMessage", "sysInstall", showWelcomeMessage)
+
+

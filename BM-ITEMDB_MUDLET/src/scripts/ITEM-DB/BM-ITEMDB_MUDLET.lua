@@ -28,6 +28,9 @@ Written by Gesslar@ThresholdRPG 2024-06-24
 
 ]]--
 
+
+cecho("registered update thingy")
+
 local function EscapePath(path)
   -- Escape spaces and other shell-special characters
   return path:gsub("([%s%$%`%!%*%?%[%]%{%}%(%)%|%;&<>])", "\\%1")

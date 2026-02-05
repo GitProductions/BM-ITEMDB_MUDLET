@@ -2,7 +2,7 @@
        "package": "BM-ITEMDB",
        "title": "Blackmud ItemDB Helper Package",
        "description": "Created to help players update items into the database with as minimal friction as possible so they can continue to play the game!",
-       "version": "1.0.2",
+       "version": "1.0.0",
        "author": "GitProductions",
        "icon": "bm-itemdb-mudletIcon.jpg",
        "dependencies": "",
