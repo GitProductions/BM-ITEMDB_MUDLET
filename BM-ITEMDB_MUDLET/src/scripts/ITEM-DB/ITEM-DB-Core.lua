@@ -270,20 +270,67 @@ local function handleSearchSuccess(event, respUrl, body)
         -- local owner = item.owner or "?"
         -- contributors is a list 
 
-        cecho(string.format("<light_blue>[%d] <wheat>%s ", i, name))
+        cecho(string.format("<light_blue>[%d] <wheat>%s \n", i, name))
 
         if type(item.raw) == "table" and #item.raw > 0 then
             for _, line in ipairs(item.raw) do
-                cecho(string.format("<light_blue>  > <white>%s\n", line))
+                cecho(string.format("<light_blue>    <white>%s\n", line))
             end
         else
-            cecho("<light_blue>  > <khaki>(No data available)\n")
+            cecho("<light_blue>    <khaki>(No data available)\n")
         end
 
-        local contributors = table.concat(item.contributors or {}, " - ")
-        cecho(string.format("<gray>(Contributors: %s)\n", contributors))
+        local contributors = table.concat(item.contributors or {}, " | ")
 
-        cecho("<light_blue>------------------------------------------------------------\n")
+        local function keywordsToSlug(keywords)
+            if not keywords or keywords == "" then
+                return "item"
+            end
+
+            local slug = keywords
+                :lower()                          -- to lowercase
+                :gsub("[^a-z0-9]+", "-")          -- any sequence of non-alphanumeric → single -
+                :gsub("^%-+", "")                 -- remove leading dashes
+                :gsub("%-+$", "")                 -- remove trailing dashes
+                :gsub("%-+","-" )                 -- collapse multiple dashes into one
+
+            return slug ~= "" and slug or "item"
+        end
+
+        cecho(string.format("\n<light_blue>Contributors: <white>[ %s ]\n", contributors ~= "" and contributors or "none"))
+
+
+
+        -- Item URL to website
+    
+        local slug = keywordsToSlug(item.keywords)
+        local itemURL = "https://bm-itemdb.gitago.dev/items/" .. item.id .. "/" .. slug
+
+        local displayText = "<light_cyan>" .. itemURL
+
+        -- Left-click action: open URL
+        local leftClickCmd = function() 
+            openUrl(itemURL) 
+        end
+
+        -- Right-click menu options
+        local popupCommands = {
+            leftClickCmd,                    -- left-click = Opens URL
+            function() 
+                send('ooc Found this item: ' .. itemURL)  -- sends to OOC channel
+            end
+        }
+
+        local popupHints = {
+            "Open in browser (Left Click)",
+            "Send to OOC chat (Right Click)"
+        }
+
+       -- Now the popup link 
+        cecho("<spring_green>Item URL: ")
+        cechoPopup(displayText, popupCommands, popupHints, true)  -- true = use current format/underline
+
+        cecho("<spring_green>\n------------------------------------------------------------\n")
     end
 end
 
@@ -325,7 +372,7 @@ function itemdb.searchItems(query)
 
     registerSearchHandlers()
 
-    cecho(string.format("<yellow>[ITEMDB] <gray>- <gray>Searching for '<wheat>%s<gray>'...\n", query))
+    cecho(string.format("\n<yellow>[ITEMDB] <gray>- <gray>Searching for '<wheat>%s<gray>'...\n", query))
     tempTimer(0.05, function()
         getHTTP(url)
     end)

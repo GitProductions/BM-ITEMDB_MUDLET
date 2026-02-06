@@ -2,7 +2,7 @@ itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. item
 
 -- ------------------------------------------------------------
 -- CAPTURE STATE
--- Uses the setTriggerStayOpen pattern — single named trigger
+-- Uses the setTriggerStayOpen pattern - single named trigger
 -- that stays open while we're reading itemdb.inventory lines, then
 -- closes itself when we hit an empty line or prompt
 -- ------------------------------------------------------------

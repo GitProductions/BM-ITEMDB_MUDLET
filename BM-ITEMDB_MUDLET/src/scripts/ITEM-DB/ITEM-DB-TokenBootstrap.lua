@@ -8,17 +8,41 @@ itemdb.tokenWelcomeShown = itemdb.tokenWelcomeShown or false
 itemdb.tokenUninstallHandlerRegistered = itemdb.tokenUninstallHandlerRegistered or false
 
 local function promptForToken()
-    cecho("\n<red>[ITEM DB] Authentication token is not set. Submissions will be blocked!\n")
-    cecho("<yellow>  Type <white>itemdb.set YOUR_TOKEN<yellow> and press Enter to save it.\n")
-    cechoLink("[<cyan>Signup for Account]", [[openUrl("https://bm-itemdb.gitago.dev/account")]],
-        "Account is required for Mudlet submissions]\n\n", true)
+    cecho("\n<spring_green>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃ <gold>BlackMUD ItemDB - First Time Setup<reset>\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃ <white>To submit items, edits, or help grow the database,\n")
+    cecho("<spring_green>┃ <white>you need to set your authentication token.\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃ <yellow>Quick start guide:\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃  1. <light_cyan>Sign up or log in<reset> to get your token:\n")
+    
+    -- Clickable link with hover tooltip
+    cecho("<spring_green>┃     ")
+    cechoLink(
+        "<light_cyan>https://bm-itemdb.gitago.dev/account",
+        [[openUrl("https://bm-itemdb.gitago.dev/account")]],
+        "Click to open the account page in your browser",
+        true
+    )
+    cecho("\n<spring_green>┃\n")
+    
+    cecho("<spring_green>┃  2. Copy your <white>API Token<reset> from the account page.\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃  3. In-game, type:\n")
+    cecho("<spring_green>┃     <white>itemdb.set YOUR_TOKEN_HERE\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃ <dim_grey>Until the token is set, submissions are disabled.\n")
+    cecho("<spring_green>┃ <dim_grey>It only takes a minute - thanks for helping build the DB!\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n")
+    
     itemdb.tokenBootPrompted = true
 end
 
-cechoLink("<spring_green>Don't have a token yet? ",
-    "<spring_green><u>Sign up here → https://bm-itemdb.gitago.dev/account</u>\n\n", function()
-        openUrl("https://bm-itemdb.gitago.dev/account")
-    end, "Click to open the signup page")
+
 
 local function ensureTokenPrompted()
     if itemdb.token and itemdb.token ~= "" then

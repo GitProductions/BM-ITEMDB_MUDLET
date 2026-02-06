@@ -19,7 +19,7 @@ end
 -- Helper function to check if token has been set at all yet..
 function itemdb.checkToken(token)
     if #token < 30 then
-        cecho("<orange>[ITEM DB] Warning: Token looks suspiciously short — might be invalid.\n")
+        cecho("<orange>[ITEM DB] Warning: Token looks suspiciously short - might be invalid.\n")
         return false
     end
 
@@ -46,12 +46,13 @@ function onHttpPostDone(_, url, body)
     if data and data.message == "valid" then
         cecho("\n<grey>ITEM-DB:<green> Token Verified\n")
         -- itemdb.token = token 
-        if data.message == "invalid" then
-            cecho("<gray>ITEM-DB:<red> INVALID TOKEN, server said: " .. tostring(data.message or "no message") .. "\n")
+    end
+
+    if data.message == "invalid" then
+            cecho("\n<gray>ITEM-DB:<red> INVALID TOKEN - Check and Try again")
 
             -- we should set to nil when invalid here to reverse but debugging..
             itemdb.token = nil
-        end
     end
 
     -- if its an item submission it will have data.itemUrl or data.itemUrls
@@ -100,7 +101,7 @@ end
 function itemdb.getToken()
     cecho("Your token is: " .. (itemdb.token or "<none>") .. "\n")
     if not itemdb.token or itemdb.token == "" then
-        cecho("<red>[ITEM DB] Token missing — set it with itemdb.token <token>\n")
+        cecho("<red>[ITEM DB] Token missing - set it with itemdb.token <token>\n")
         return nil
     end
     return itemdb.token
