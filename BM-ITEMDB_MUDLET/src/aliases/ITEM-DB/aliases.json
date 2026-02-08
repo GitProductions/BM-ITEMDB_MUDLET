@@ -1,41 +1,41 @@
 [
        {
-              "name": "ITEM-DB-Search",
+              "name": "ITEM-DB_Search",
               "isActive": "yes",
               "regex": "^itemdb.search\\s+(.+)$",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB-Capture-Item",
+              "name": "ITEM-DB_Capture-Item",
               "isActive": "yes",
               "regex": "^itemdb.capture$",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB token Check",
+              "name": "ITEM-DB_Check-Token",
               "isActive": "yes",
               "regex": "^itemdb.show$",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB token setter",
+              "name": "ITEM-DB_Set-Token",
               "isActive": "yes",
               "regex": "^itemdb.set\\s+(.+)$",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB Help",
+              "name": "ITEM-DB_Help",
               "isActive": "yes",
               "regex": "^itemdb$",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB-Debug-Mode",
+              "name": "ITEM-DB_Debug-Mode",
               "isActive": "yes",
               "regex": "^itemdb.debug$",
               "script": "",

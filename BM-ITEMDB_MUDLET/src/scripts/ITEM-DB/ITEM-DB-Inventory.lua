@@ -194,13 +194,21 @@ end
 -- called on sysLoadEvent and sysInstall, but will only run once
 function itemdb.inventory.initialize()
     local savedata = {}
-    table.load(itemdb.savePath, savedata)
+    
+    -- Only attempt to load if the save file exists
+    local f = io.open(itemdb.savePath, "r")
+    if f then
+        io.close(f)
+        table.load(itemdb.savePath, savedata)
+    end
 
     -- loading data from previous session
     itemdb.inventory.data = savedata.inventory or {}
     itemdb.token = savedata.token or ""
 
-    itemdb.inventory.window.refresh()
+
+    itemdb.inventory.window.initialize()
+    -- itemdb.inventory.window.refresh()
 
     if itemdb.state.debugMode then
         cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")

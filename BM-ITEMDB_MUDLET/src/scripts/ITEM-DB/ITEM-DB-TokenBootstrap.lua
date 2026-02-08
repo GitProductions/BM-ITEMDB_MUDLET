@@ -8,7 +8,7 @@ itemdb.tokenWelcomeShown = itemdb.tokenWelcomeShown or false
 itemdb.tokenUninstallHandlerRegistered = itemdb.tokenUninstallHandlerRegistered or false
 
 local function promptForToken()
-    cecho("\n<spring_green>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
+    cecho("\n<spring_green>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <gold>BlackMUD ItemDB - First Time Setup<reset>\n")
     cecho("<spring_green>┃\n")
@@ -36,6 +36,8 @@ local function promptForToken()
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <dim_grey>Until the token is set, submissions are disabled.\n")
     cecho("<spring_green>┃ <dim_grey>It only takes a minute - thanks for helping build the DB!\n")
+    cecho("<spring_green>┃\n")
+    cecho("<spring_green>┃ <light_blue>><white> Be sure to type the command <yellow>itemdb <dim_grey> for more commands\n")
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n")
     

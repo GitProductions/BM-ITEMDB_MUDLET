@@ -51,11 +51,16 @@ itemdb.state = itemdb.state or {
     debugMode = false
 }
 
+-- local ITEMDB_BASE_URL = "https://bm-itemdb.gitago.dev"
+local ITEMDB_BASE_URL = "http://localhost:3000"
+
 function itemdb.debug()
     cecho("\n<yellow>[ITEMDB] <gray>- Debug mode is " .. (itemdb.state.debugMode and "<red>OFF" or "<green>ON") .. "\n")
     -- debug toggle
     itemdb.state.debugMode = not itemdb.state.debugMode
 end
+
+----- Functions for When User Identifies ----------
 
 -- Used to reset captured lines after submission or cancellation
 local function resetCaptureLines()
@@ -111,15 +116,17 @@ function itemdb.finishIdentifyCapture()
     setTriggerStayOpen("IdentifyStart", 0)
     itemdb.state.captureActive = false
 
-    local count = #itemdb.state.captureLines
-    if count > 0 then
-        cecho("<cyan>+----------------- Item Identified -----------------+\n")
-        for _, l in ipairs(itemdb.state.captureLines) do
-            cecho("<cyan>| <white>" .. l .. "\n")
+    if itemdb.state.debugMode == true then
+        local count = #itemdb.state.captureLines
+        if count > 0 then
+            cecho("<cyan>+----------------- Item Identified -----------------+\n")
+            for _, l in ipairs(itemdb.state.captureLines) do
+                cecho("<cyan>| <white>" .. l .. "\n")
+            end
+            cecho("<cyan>+---------------------------------------------------+\n\n")
+        else
+            cecho("<yellow>[ITEMDB] <orange>No useful lines captured?\n")
         end
-        cecho("<cyan>+---------------------------------------------------+\n\n")
-    else
-        cecho("<yellow>[ITEMDB] <orange>No useful lines captured?\n")
     end
 
     -- expandAlias("capture-item-button")
@@ -133,7 +140,7 @@ function itemdb.finishIdentifyCapture()
 end
 
 function itemdb.askUser()
-    cecho("Item-DB:<light_blue>Submit Item: ")
+    cecho("<yellow>[Item-DB]: <light_blue>Submit Item: ")
     cechoLink("<green><b>[ Open Inventory ]</b>", function()
         cecho("Preparing to submit item...\n")
         cecho("<yellow>Select the item from your inventory:\n\n")
@@ -141,18 +148,17 @@ function itemdb.askUser()
         itemdb.startItemSelection(20)
         send("inv")
 
-
         -- Showing the inventory window
         itemdb.inventory.window:show()
 
-    end, "Item-DB: Click to submit item", true)
+    end, "[Item-DB]: Click to submit item", true)
 
     cecho("  ") -- spacing
 
     cechoLink("<red><b>[ CANCEL ]</b>", function()
         cecho("<yellow>Item submission cancelled.\n")
         itemdb.cancelItemSelection(true)
-    end, "Item-DB: Cancel and discard this item", true)
+    end, "[Item-DB]: Cancel and discard this item", true)
     cecho("\n\n")
 end
 
@@ -186,12 +192,64 @@ function itemdb.cancelItemSelection(clearCapture)
     end
 end
 
+------------- Item Submission  ------------
+local function handleSubmitError(event, errMsg, respUrl)
+    cecho("<yellow>[ITEMDB] <gray>- <red>Submission failed: " .. (errMsg or "unknown") .. "\n")
+end
+local function handleSubmitSuccess(event, respUrl, body)
+    local ok, data = pcall(yajl.to_value, body)
+    if not ok or type(data) ~= "table" or type(data.itemUrls) ~= "table" or #data.itemUrls == 0 then
+        cecho("<yellow>[ITEMDB] <gray>- <red>Failed to parse submission results or no URL returned.\n")
+        return
+    end
+
+    local itemURL = data.itemUrls[1]
+
+    cecho("<spring_green>==================== Item Submitted Successfully! ====================\n\n")
+    cecho("<light_blue>New item submitted! Here's your link:\n\n")
+    cecho("<spring_green>Item URL: <light_cyan>" .. itemURL .. "\n\n")
+
+    -- Button row
+    cecho("<ansi_white>")
+
+    -- Open Website button
+    cechoLink("<light_blue>[<wheat> Open in Browser <light_blue>]  ", function()
+        openUrl(itemURL)
+    end, "Open this item in your web browser", true)
+
+    -- Share in OOC button
+    cechoLink("<light_blue>[<wheat> Share in OOC <light_blue>]  ", function()
+        send('ooc New Item Submitted: ' .. itemURL)
+    end, "Send this link to the OOC channel", true)
+
+    -- Copy button (if supported)
+    if clipboard then
+        cechoLink("<light_blue>[<wheat> Copy URL <light_blue>]", function()
+            clipboard.set(itemURL)
+            cecho("<spring_green>\n[URL copied to clipboard!]\n")
+        end, "Copy the URL to your clipboard", true)
+    end
+
+    cecho("\n\n<spring_green>--------------------------------------------------------------------\n")
+end
+local function registerSubmissionHandlers()
+    -- if itemdb.state.submitHandlersRegistered then
+    --     return
+    -- end
+
+    registerNamedEventHandler("itemdb.submit", "itemdbSubmitSuccess", "sysPostHttpDone", handleSubmitSuccess)
+    registerNamedEventHandler("itemdb.submit", "itemdbSubmitError", "sysPostHttpError", handleSubmitError)
+
+    -- itemdb.state.submitHandlersRegistered = true
+end
+
 function itemdb.submitSAMPLEDATA()
+    registerSubmissionHandlers()
     cecho("Submitting sample data...\n")
     local sampledata =
         "an oily black ring of unknown metalTES (excellent)\nObject 'ring black oily unknown metalTEST', Item type: worn\nThis item's ego is of trifling proportions.\nThis item can always be repaired.\nItem is: metal\nWetest: 1\nAffects:\nType:  mana  Value: 46\nType: save_all  Value: 6\nType: mana_regen  Value: 3"
 
-    local url = "http://localhost:3000/api/items"
+    -- local url = "http://localhost:3000/api/items"
     local headers = {
         ["Content-Type"] = "application/json",
         ["Authorization"] = "Bearer " .. itemdb.token
@@ -201,10 +259,14 @@ function itemdb.submitSAMPLEDATA()
         raw = sampledata
     })
 
-    postHTTP(body, url, headers)
+    postHTTP(body, ITEMDB_BASE_URL .. "/api/items", headers)
 end
 
 function itemdb.submitCapturedItem(itemLine)
+    if not itemdb.token then
+        cecho("<gray>[ITEM-DB]: Token missing. Set it with: <white>itemdb.set YOUR_TOKEN\n")
+    end
+
     if not itemdb.state.selectingInventoryItem then
         cecho("Selecting " .. itemLine .. "\n")
         cecho("<yellow>[ITEMDB] <gray>- <red>No item selection in progress.\n")
@@ -218,14 +280,12 @@ function itemdb.submitCapturedItem(itemLine)
         return
     end
 
-    if not itemdb.checkToken or not itemdb.checkToken(itemdb.token) then
-        return
-    end
+    -- Registering Callbacks for submission results
+    registerSubmissionHandlers()
 
     local identifyOutput = table.concat(itemdb.state.captureLines, "\n")
     local completeData = itemLine .. "\n" .. identifyOutput
 
-    local url = "https://bm-itemdb.gitago.dev/api/items"
     local headers = {
         ["Content-Type"] = "application/json",
         ["Authorization"] = "Bearer " .. itemdb.token
@@ -235,8 +295,7 @@ function itemdb.submitCapturedItem(itemLine)
         raw = completeData
     })
 
-    postHTTP(body, url, headers)
-    cecho("<yellow>[ITEMDB] <gray>- <cyan>Submitted successfully!\n")
+    postHTTP(body, ITEMDB_BASE_URL .. "/api/items", headers)
 
     -- assuring cleanup
     resetCaptureLines()
@@ -244,7 +303,23 @@ function itemdb.submitCapturedItem(itemLine)
     itemdb.inventory.window:hide()
 end
 
--- Search helpers
+--------------------------------------------------
+
+------------- Item Search ------------
+local function keywordsToSlug(keywords)
+    if not keywords or keywords == "" then
+        return "item"
+    end
+
+    local slug = keywords:lower() -- to lowercase
+    :gsub("[^a-z0-9]+", "-") -- any sequence of non-alphanumeric → single -
+    :gsub("^%-+", "") -- remove leading dashes
+    :gsub("%-+$", "") -- remove trailing dashes
+    :gsub("%-+", "-") -- collapse multiple dashes into one
+
+    return slug ~= "" and slug or "item"
+end
+
 local function handleSearchSuccess(event, respUrl, body)
     if respUrl ~= itemdb.state.searchCurrentUrl then
         return
@@ -266,9 +341,6 @@ local function handleSearchSuccess(event, respUrl, body)
 
     for i, item in ipairs(data.items) do
         local name = item.name or "<unknown>"
-        
-        -- local owner = item.owner or "?"
-        -- contributors is a list 
 
         cecho(string.format("<light_blue>[%d] <wheat>%s \n", i, name))
 
@@ -282,79 +354,68 @@ local function handleSearchSuccess(event, respUrl, body)
 
         local contributors = table.concat(item.contributors or {}, " | ")
 
-        local function keywordsToSlug(keywords)
-            if not keywords or keywords == "" then
-                return "item"
-            end
-
-            local slug = keywords
-                :lower()                          -- to lowercase
-                :gsub("[^a-z0-9]+", "-")          -- any sequence of non-alphanumeric → single -
-                :gsub("^%-+", "")                 -- remove leading dashes
-                :gsub("%-+$", "")                 -- remove trailing dashes
-                :gsub("%-+","-" )                 -- collapse multiple dashes into one
-
-            return slug ~= "" and slug or "item"
-        end
-
-        cecho(string.format("\n<light_blue>Contributors: <white>[ %s ]\n", contributors ~= "" and contributors or "none"))
-
-
+        cecho(
+            string.format("\n<light_blue>Contributors: <white>[ %s ]\n", contributors ~= "" and contributors or "none"))
 
         -- Item URL to website
-    
+
         local slug = keywordsToSlug(item.keywords)
-        local itemURL = "https://bm-itemdb.gitago.dev/items/" .. item.id .. "/" .. slug
+        local itemURL = ITEMDB_BASE_URL .. "/items/" .. item.id .. "/" .. slug
 
-        local displayText = "<light_cyan>" .. itemURL
+        -- local displayText = "<light_cyan>" .. itemURL
 
-        -- Left-click action: open URL
-        local leftClickCmd = function() 
-            openUrl(itemURL) 
+        -- -- Left-click action: open URL
+        -- local leftClickCmd = function()
+        --     openUrl(itemURL)
+        -- end
+
+        -- -- Right-click menu options
+        -- local popupCommands = {leftClickCmd, -- left-click = Opens URL
+        -- function()
+        --     send('ooc Found this item: ' .. itemURL) -- sends to OOC channel
+        -- end}
+
+        -- local popupHints = {"Open in browser (Left Click)", "Send to OOC chat (Right Click)"}
+
+        -- -- Now the popup link 
+        -- cecho("<spring_green>Item URL: ")
+        -- cechoPopup(displayText, popupCommands, popupHints, true) -- true = use current format/underline
+        cecho("<spring_green>Item URL: <light_cyan>" .. itemURL .. "\n")
+
+        cecho("<ansi_white>")
+        cechoLink("<light_blue>[<wheat> Open in Browser <light_blue>]  ", function()
+            openUrl(itemURL)
+        end, "Open in browser", true)
+        cechoLink("<light_blue>[<wheat> Send to OOC <light_blue>]  ", function()
+            send('ooc ' .. itemURL)
+        end, "Send to OOC", true)
+        if clipboard then
+            cechoLink("<light_blue>[<wheat> Copy URL <light_blue>]", function()
+                clipboard.set(itemURL);
+                cecho("<spring_green>\n→ Copied!\n")
+            end, "Copy URL", true)
         end
-
-        -- Right-click menu options
-        local popupCommands = {
-            leftClickCmd,                    -- left-click = Opens URL
-            function() 
-                send('ooc Found this item: ' .. itemURL)  -- sends to OOC channel
-            end
-        }
-
-        local popupHints = {
-            "Open in browser (Left Click)",
-            "Send to OOC chat (Right Click)"
-        }
-
-       -- Now the popup link 
-        cecho("<spring_green>Item URL: ")
-        cechoPopup(displayText, popupCommands, popupHints, true)  -- true = use current format/underline
 
         cecho("<spring_green>\n------------------------------------------------------------\n")
     end
 end
-
--- Handles search errors / response failures
 local function handleSearchError(event, errMsg, respUrl)
     if respUrl ~= itemdb.state.searchCurrentUrl then
         return
     end
     cecho("<yellow>[ITEMDB] <gray>- <red>Search failed: " .. (errMsg or "unknown") .. "\n")
 end
-
--- Registers HTTP handlers for search functionality
 local function registerSearchHandlers()
-    if itemdb.state.searchHandlersRegistered then
-        return
-    end
+    -- if itemdb.state.searchHandlersRegistered then
+    --     return
+    -- end
 
     registerNamedEventHandler("itemdb.search", "itemdbSearchSuccess", "sysGetHttpDone", handleSearchSuccess)
     registerNamedEventHandler("itemdb.search", "itemdbSearchError", "sysGetHttpError", handleSearchError)
 
-    itemdb.state.searchHandlersRegistered = true
+    -- itemdb.state.searchHandlersRegistered = true
 end
 
--- Performs a search against the Item DB API and displays results
 function itemdb.searchItems(query)
     query = (query or ""):trim()
     if query == "" then
@@ -366,7 +427,8 @@ function itemdb.searchItems(query)
         return string.format("%%%02X", c:byte())
     end):gsub(" ", "+")
 
-    local url = "https://bm-itemdb.gitago.dev/api/items?q=" .. encoded
+    -- local url = ITEMDB_URL .. "?q=" .. encoded
+    local url = ITEMDB_BASE_URL .. "/api/items?q=" .. encoded
     itemdb.state.searchCurrentUrl = url
     itemdb.state.searchCurrentQuery = query
 
@@ -377,24 +439,19 @@ function itemdb.searchItems(query)
         getHTTP(url)
     end)
 end
-
+--------------------------------------------------
 
 function itemdb.help()
-    cecho("<spring_green>───────────────────── ItemDB Commands ─────────────────────\n\n")
-  
+    cecho(
+        "<spring_green>───────────────────── ItemDB Commands ─────────────────────\n\n")
 
-    local commands = {
-        {"itemdb.set <token>",      "set your user token for item submissions"},
-        {"itemdb.show <token>",      "show your current user token"},
+    local commands = {{"itemdb.set <token>", "set your user token for item submissions"},
+                      {"itemdb.show <token>", "show your current user token"},
 
-        -- {"add",                "add new item interactively"},
-        {"itemdb.search <text>",      "search items by name/keyword"},
+    -- {"add",                "add new item interactively"},
+                      {"itemdb.search <text>", "search items by name/keyword"},
 
-        {"itemdb.debug",      "enable debug mode for logging errors"},
-
-        {"itemdb",           "show this help"},
-        -- {"reload",             "force reload database"},
-    }
+                      {"itemdb.debug", "enable debug mode for logging errors"}, {"itemdb", "show this help"}}
 
     local maxLen = 0
     for _, entry in ipairs(commands) do
@@ -402,18 +459,12 @@ function itemdb.help()
     end
 
     for _, entry in ipairs(commands) do
-        cecho(string.format("<light_blue>  %- "..maxLen.."s  <gray>→ <wheat>%s\n",
-            entry[1], entry[2]))
+        cecho(string.format("<light_blue>  %- " .. maxLen .. "s  <gray>→ <wheat>%s\n", entry[1], entry[2]))
     end
 
-    cecho("\n<spring_green>────────────────────────────────────────────────────────────\n")
+    cecho(
+        "\n<spring_green>────────────────────────────────────────────────────────────\n")
 end
-    
-
-
-
-
-
 
 -- function handlePut(commandSent)
 --     if commandSent:sub(1, 4) ~= "put " then
@@ -461,7 +512,6 @@ end
 --         return
 --     end
 
-
 --     ----------------------------------------------------------------
 --     -- PUT
 --     ----------------------------------------------------------------
@@ -485,7 +535,6 @@ end
 --     --     handleWear(commandSent)
 --     --     return
 --     -- end
-
 
 -- end
 

@@ -4,8 +4,8 @@
 
 
 ------- Issues..
--- 1.  Sometimes the ui needs to be moved/adjusted for it to initially populate the data its been given.
--- 2. After reloading the module, it causes the old labels/buttons to still remain and cover parts of the screen until restarting the users profile
+-- 1.  Sometimes the ui needs to be moved/adjusted for it to initially populate the data its been given. (fixed)
+-- 2. After reloading the module, it causes the old labels/buttons to still remain and cover parts of the screen until restarting the users profile (fixed)
 -- 3. Contents are not scrollable and overflow if too long for window height.  - adding overflow to container doesnt help
 
 
@@ -21,22 +21,32 @@ itemdb.inventory.colors = {
     textDesc   = "#6a7a8a",
 }
 
+itemdb.inventory.data = itemdb.inventory.data or {}
+
 
 itemdb.inventory.window = itemdb.inventory.window or  Adjustable.Container:new({
     name = "itemdb.inventory.window",
-    x = "75%",
+    x = "65%",
     y = "2%",
-    width = "22%",
-    height = "35%",
-    titleText = "Inventory - v2",
+    width = "250",
+    height = "300",
+    titleText = "Inventory - ItemDB",
     titleTxtColor = "#c8d6e5",
     adjLabelstyle = [[
         background-color: ]] .. itemdb.inventory.colors.bgPanel .. [[;
         border: 1px solid ]] .. itemdb.inventory.colors.border .. [[;
         border-radius: 4px;
-    ]]
+    ]],
+    docked = true,
+    dockPosition = "right"
 
 })
+
+-- Initialize the window with setup message on first load
+-- if not itemdb.inventory.initialized then
+--     itemdb.inventory.window.initialize()
+--     itemdb.inventory.initialized = true
+-- end
 
 
 
@@ -86,7 +96,7 @@ function itemdb.inventory.window.refresh()
     
     -- Delete ALL old widgets (both labels and buttons) from previous refreshes
     -- Using deleteLabel which works on all miniconsoles created by Geyser
-    for i = 1, 100 do
+    for i = 1, 30 do
         local labelName = "itemdb.inventory.window.label." .. i
         local buttonName = "itemdb.inventory.window.button." .. i
         
@@ -144,3 +154,51 @@ end
 
 
 
+function itemdb.inventory.window.initialize()
+    -- Create a setup message that appears on first load
+    Geyser.Label:new({
+        name = "itemdb.inventory.window.setupMessage",
+        x = 0,
+        y = 0,
+        width = "100%",
+        height = "70%",
+        message = [[
+            <center>
+                <b style="font-size: 12px; color: #c8d6e5;">Adjust </b>
+                <br><br>
+                <span style="color: #8a9bb5; font-size: 10px;">
+                    Adjust this window to a preferred location.
+                    <br>
+                    It will only appear when you identify an item.
+                </span>
+            </center>
+        ]]
+    }, itemdb.inventory.window):setStyleSheet([[
+        background-color: ]] .. itemdb.inventory.colors.bgPanel .. [[;
+        border: 1px solid ]] .. itemdb.inventory.colors.border .. [[;
+    ]])
+
+
+    -- Close button
+    Geyser.Button:new({
+        name = "itemdb.inventory.window.setupClose",
+        msg = "<center>Got it!</center>",
+        clickFunction = function()
+            deleteLabel("itemdb.inventory.window.setupMessage")
+            deleteLabel("itemdb.inventory.window.setupClose")
+        end,
+        x = "10%",
+        y = "70%",
+        width = "80%",
+        height = "25%",
+        style = [[
+            background-color: ]] .. itemdb.inventory.colors.bgRow .. [[;
+            border: 1px solid ]] .. itemdb.inventory.colors.border .. [[;
+            color: #e0e6f0;
+            font-weight: 600;
+            margin-top: 10px;
+        ]]
+    }, itemdb.inventory.window)
+
+    cecho("\nbutton made")
+end

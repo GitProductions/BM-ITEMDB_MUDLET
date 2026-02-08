@@ -30,7 +30,7 @@ function itemdb.checkToken(token)
 end
 
 function onHttpPostDone(_, url, body)
-    if itemdb.debugMode then
+    if itemdb.state.debugMode then
         cecho(string.format("<white>url: <dark_green>%s<white>, body: <dark_green>%s\n", url, body))
     end 
 
@@ -44,12 +44,12 @@ function onHttpPostDone(_, url, body)
 
     -- If its a token response, it will have data.message 
     if data and data.message == "valid" then
-        cecho("\n<grey>ITEM-DB:<green> Token Verified\n")
+        cecho("\n<grey>[ITEM-DB]:<green> Token Verified\n")
         -- itemdb.token = token 
     end
 
     if data.message == "invalid" then
-            cecho("\n<gray>ITEM-DB:<red> INVALID TOKEN - Check and Try again")
+            cecho("\n<gray>[ITEM-DB]:<red> INVALID TOKEN - Check and Try again")
 
             -- we should set to nil when invalid here to reverse but debugging..
             itemdb.token = nil
@@ -64,21 +64,21 @@ function onHttpPostDone(_, url, body)
         -- clickable + selectable text
         cechoLink("<yellow>[ITEMDB] <gray>- <cyan>" .. url .. "\n", function()
             openUrl(url)
-        end, "Item-DB: Click to open link", true)
+        end, "[Item-DB]: Click to open link", true)
     end
 
 end
 
 function onHttpPostError(_, url, errorMsg)
-    cecho("<gray>ITEM-DB:<red> ItemDB may be down, please check and report to Gitago if issue persists " .. errorMsg .. "\n")
+    cecho("<gray>[ITEM-DB]:<red> ItemDB may be down, please check and report to Gitago if issue persists " .. errorMsg .. "\n")
 end
 
 
 function itemdb.verifyToken(token)
 
     -- Making Post request to ItemDB to verify user token
-    cecho("<gray>ITEM-DB:<yellow> Verifying User Auth Token... ")
-    local url = "https://bm-itemdb.gitago.dev/api/tokens/verify"
+    cecho("<gray>[ITEM-DB]:<yellow> Verifying User Auth Token... ")
+    local url = ITEMDB_BASE_URL .. "/api/tokens/verify"
     -- local url = "http://localhost:3000/api/tokens/verify"
     local headers = {
         ["Content-Type"] = "application/json"
@@ -99,11 +99,22 @@ end
 
 -- Give user their token if needed for debug / etc
 function itemdb.getToken()
-    cecho("Your token is: " .. (itemdb.token or "<none>") .. "\n")
     if not itemdb.token or itemdb.token == "" then
-        cecho("<red>[ITEM DB] Token missing - set it with itemdb.token <token>\n")
+        cecho("<gray>[ITEM-DB]: Token missing. Set it with: <white>itemdb.set YOUR_TOKEN\n")
+        cecho("<spring_green>Need one? ")
+        cechoLink(
+            "<light_cyan>Click here to get your token",
+            [[openUrl("https://bm-itemdb.gitago.dev/account")]],
+            "Open account page",
+            true
+        )
+        cecho("\n")
         return nil
     end
+
+    -- Show masked token
+    local masked = string.rep("*", 8) .. string.sub(itemdb.token, -4)
+    cecho("<spring_green>Token set: <white>" .. masked .. " <dim_grey>(last 4 visible)\n")
     return itemdb.token
 end
 
