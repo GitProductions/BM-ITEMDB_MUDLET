@@ -26,16 +26,15 @@ function itemdb.checkToken(token)
     itemdb.token = token -- setting token as valid and will revoke later if invalid
 
     itemdb.verifyToken(itemdb.token)
-    return true
 end
 
 function onHttpPostDone(_, url, body)
     if itemdb.state.debugMode then
-        cecho(string.format("<white>url: <dark_green>%s<white>, body: <dark_green>%s\n", url, body))
+        cecho(string.format("\n<white>url: <dark_green>%s<white>, body: <dark_green>%s\n", url, body))
     end 
 
     if not body or body == "" then
-        cecho("<red>Empty response from server!\n")
+        cecho("\n<red>Empty response from server!\n")
         itemdb.token = nil
     end
 
@@ -45,16 +44,16 @@ function onHttpPostDone(_, url, body)
     -- If its a token response, it will have data.message 
     if data and data.message == "valid" then
         cecho("\n<grey>[ITEM-DB]:<green> Token Verified\n")
-        -- itemdb.token = token 
     end
 
-    if data.message == "invalid" then
-            cecho("\n<gray>[ITEM-DB]:<red> INVALID TOKEN - Check and Try again")
-
+    if data and data.message == "invalid" then
+            cecho("\n<gray>[ITEM-DB]:<red> INVALID TOKEN - Check and Try again\n")
             -- we should set to nil when invalid here to reverse but debugging..
             itemdb.token = nil
     end
 
+
+    
     -- if its an item submission it will have data.itemUrl or data.itemUrls
     if data and (data.itemUrl or data.itemUrls) then
         local url = data.itemUrl or data.itemUrls[1]
@@ -78,8 +77,7 @@ function itemdb.verifyToken(token)
 
     -- Making Post request to ItemDB to verify user token
     cecho("<gray>[ITEM-DB]:<yellow> Verifying User Auth Token... ")
-    local url = ITEMDB_BASE_URL .. "/api/tokens/verify"
-    -- local url = "http://localhost:3000/api/tokens/verify"
+    local url = itemdb.BASE_URL .. "/api/tokens/verify"
     local headers = {
         ["Content-Type"] = "application/json"
     }

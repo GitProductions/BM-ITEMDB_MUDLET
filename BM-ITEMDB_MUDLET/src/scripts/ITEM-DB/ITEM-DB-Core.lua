@@ -51,8 +51,8 @@ itemdb.state = itemdb.state or {
     debugMode = false
 }
 
--- local ITEMDB_BASE_URL = "https://bm-itemdb.gitago.dev"
-local ITEMDB_BASE_URL = "http://localhost:3000"
+itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
+-- local itemdb.BASE_URL = "http://localhost:3000"
 
 function itemdb.debug()
     cecho("\n<yellow>[ITEMDB] <gray>- Debug mode is " .. (itemdb.state.debugMode and "<red>OFF" or "<green>ON") .. "\n")
@@ -259,7 +259,7 @@ function itemdb.submitSAMPLEDATA()
         raw = sampledata
     })
 
-    postHTTP(body, ITEMDB_BASE_URL .. "/api/items", headers)
+    postHTTP(body, itemdb.BASE_URL .. "/api/items", headers)
 end
 
 function itemdb.submitCapturedItem(itemLine)
@@ -295,7 +295,7 @@ function itemdb.submitCapturedItem(itemLine)
         raw = completeData
     })
 
-    postHTTP(body, ITEMDB_BASE_URL .. "/api/items", headers)
+    postHTTP(body, itemdb.BASE_URL .. "/api/items", headers)
 
     -- assuring cleanup
     resetCaptureLines()
@@ -360,7 +360,7 @@ local function handleSearchSuccess(event, respUrl, body)
         -- Item URL to website
 
         local slug = keywordsToSlug(item.keywords)
-        local itemURL = ITEMDB_BASE_URL .. "/items/" .. item.id .. "/" .. slug
+        local itemURL = itemdb.BASE_URL .. "/items/" .. item.id .. "/" .. slug
 
         -- local displayText = "<light_cyan>" .. itemURL
 
@@ -428,7 +428,7 @@ function itemdb.searchItems(query)
     end):gsub(" ", "+")
 
     -- local url = ITEMDB_URL .. "?q=" .. encoded
-    local url = ITEMDB_BASE_URL .. "/api/items?q=" .. encoded
+    local url = itemdb.BASE_URL .. "/api/items?q=" .. encoded
     itemdb.state.searchCurrentUrl = url
     itemdb.state.searchCurrentQuery = query
 
