@@ -21,7 +21,7 @@ Sign up for an account you can then create an API token which can be used to set
 Once you acquire the token from the ItemDB you can hop in Mudlet and type in the command as seen below.
 Be sure you are replacing `<TOKEN>` with your actual token from the website.
 
-> `itemdb.set <TOKEN>`
+> `itemdb.setToken <TOKEN>`
 
 
 ### Whats next?

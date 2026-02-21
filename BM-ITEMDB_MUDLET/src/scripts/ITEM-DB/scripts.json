@@ -6,12 +6,6 @@
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB-TokenBootstrap",
-              "isActive": "yes",
-              "script": "",
-              "isFolder": "no"
-       },
-       {
               "name": "ITEM-DB-Core",
               "isActive": "yes",
               "script": "",
@@ -31,6 +25,12 @@
        },
        {
               "name": "BM-ITEMDB_MUDLET",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB-Submit",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"

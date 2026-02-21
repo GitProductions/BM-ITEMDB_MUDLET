@@ -2,7 +2,7 @@
        {
               "name": "ITEM-DB_Search",
               "isActive": "yes",
-              "regex": "^itemdb.search\\s+(.+)$",
+              "regex": "^itemdb\\.search\\s+(.+)?$",
               "script": "",
               "isFolder": "no"
        },
@@ -23,7 +23,7 @@
        {
               "name": "ITEM-DB_Set-Token",
               "isActive": "yes",
-              "regex": "^itemdb.set\\s+(.+)$",
+              "regex": "(?i)^itemdb\\.setToken(?:\\s+(.*))?$",
               "script": "",
               "isFolder": "no"
        },
@@ -38,6 +38,41 @@
               "name": "ITEM-DB_Debug-Mode",
               "isActive": "yes",
               "regex": "^itemdb.debug$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB_Set-UserOOC",
+              "isActive": "yes",
+              "regex": "(?i)^itemdb\\.setMessage(?:\\s+(.*))?$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB_Help",
+              "isActive": "yes",
+              "regex": "^itemdb$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB_Reset",
+              "isActive": "yes",
+              "regex": "^itemdb\\.reset$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB_Welcome",
+              "isActive": "yes",
+              "regex": "^itemdb\\.welcome$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB_Timeout",
+              "isActive": "yes",
+              "regex": "(?i)^itemdb\\.setTimeout(?:\\s+(.*))?$",
               "script": "",
               "isFolder": "no"
        }

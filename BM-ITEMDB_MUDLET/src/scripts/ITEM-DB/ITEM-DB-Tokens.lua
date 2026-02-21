@@ -1,8 +1,5 @@
--- Item DB - Core / Init 
-itemdb = itemdb or {}
-itemdb.token = itemdb.token or ""
 
-function parseJson(body)
+local function parseJson(body)
     local success, data = pcall(yajl.to_value, body)
 
     -- if not success then
@@ -16,25 +13,23 @@ function parseJson(body)
     return data
 end
 
--- Helper function to check if token has been set at all yet..
-function itemdb.checkToken(token)
-    if #token < 30 then
-        cecho("<orange>[ITEM DB] Warning: Token looks suspiciously short - might be invalid.\n")
-        return false
-    end
-
-    itemdb.token = token -- setting token as valid and will revoke later if invalid
-
-    itemdb.verifyToken(itemdb.token)
+function itemdb.sendStatusMessage(message, color)
+    color = color or "spring_green"
+    cecho("<" .. color .. ">┏━━<gray>[ ItemDB ]" .."<" .. color .. ">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
+    cecho("<" .. color .. ">┃\n")
+    cecho("<" .. color .. ">┃ <white> " .. message .. " \n")
+    cecho("<" .. color .. ">┃\n")
+    cecho("<" .. color .. ">┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n")
 end
 
-function onHttpPostDone(_, url, body)
+local function handleVerifySuccess(_, url, body)
     if itemdb.state.debugMode then
         cecho(string.format("\n<white>url: <dark_green>%s<white>, body: <dark_green>%s\n", url, body))
     end 
 
     if not body or body == "" then
         cecho("\n<red>Empty response from server!\n")
+        itemdb.tokenVerified = false
         itemdb.token = nil
     end
 
@@ -43,62 +38,79 @@ function onHttpPostDone(_, url, body)
 
     -- If its a token response, it will have data.message 
     if data and data.message == "valid" then
-        cecho("\n<grey>[ITEM-DB]:<green> Token Verified\n")
+        itemdb.sendStatusMessage("Token Verified Successfully!", "spring_green")
+
+        itemdb.tokenVerified = true
     end
 
     if data and data.message == "invalid" then
-            cecho("\n<gray>[ITEM-DB]:<red> INVALID TOKEN - Check and Try again\n")
-            -- we should set to nil when invalid here to reverse but debugging..
+            itemdb.sendStatusMessage("Token Invalid!", "orange_red")
+
+            itemdb.tokenVerified = false
             itemdb.token = nil
     end
 
-
-    
-    -- if its an item submission it will have data.itemUrl or data.itemUrls
-    if data and (data.itemUrl or data.itemUrls) then
-        local url = data.itemUrl or data.itemUrls[1]
-
-        cecho("<yellow>[ITEMDB] <gray>- <green><b>Submitted successfully!</b>\n")
-
-        -- clickable + selectable text
-        cechoLink("<yellow>[ITEMDB] <gray>- <cyan>" .. url .. "\n", function()
-            openUrl(url)
-        end, "[Item-DB]: Click to open link", true)
-    end
-
 end
 
-function onHttpPostError(_, url, errorMsg)
+local function handleVerifyError(_, url, errorMsg)
     cecho("<gray>[ITEM-DB]:<red> ItemDB may be down, please check and report to Gitago if issue persists " .. errorMsg .. "\n")
 end
 
-
-function itemdb.verifyToken(token)
-
+local function verifyToken(token)
     -- Making Post request to ItemDB to verify user token
-    cecho("<gray>[ITEM-DB]:<yellow> Verifying User Auth Token... ")
+
+    if itemdb.state.debugMode then
+        itemdb.sendStatusMessage("Verifying User Auth Token...", "khaki")
+    end
+
     local url = itemdb.BASE_URL .. "/api/tokens/verify"
     local headers = {
         ["Content-Type"] = "application/json"
     }
 
     -- assuring we close/kill handlers set prior
-    if tokenVerifyHandlerID then killAnonymousEventHandler(tokenVerifyHandlerID) end
-    tokenVerifyHandlerID = registerAnonymousEventHandler("sysPostHttpDone", onHttpPostDone, true)
+    -- if tokenVerifyHandlerID then killAnonymousEventHandler(tokenVerifyHandlerID) end
+    -- tokenVerifyHandlerID = registerAnonymousEventHandler("sysPostHttpDone", onHttpPostDone, true)
 
-    if tokenErrorHandlerID then killAnonymousEventHandler(tokenErrorHandlerID) end
-    tokenErrorHandlerID = registerAnonymousEventHandler("sysPostHttpError", onHttpPostError, true)
+    -- if tokenErrorHandlerID then killAnonymousEventHandler(tokenErrorHandlerID) end
+    -- tokenErrorHandlerID = registerAnonymousEventHandler("sysPostHttpError", onHttpPostError, true)
+
+    registerNamedEventHandler("itemdb.verifyToken", "itemdbVerifySuccess", "sysPostHttpDone", handleVerifySuccess)
+    registerNamedEventHandler("itemdb.verifyToken", "itemdbVerifyError", "sysPostHttpError", handleVerifyError)
+
 
     postHTTP(token, url, headers)
 end
 
 
+-- ============================================================
+-- TOKEN COMMANDS - SET, GET, VERIFY
+-- Note: user token gets set, but revoked if the verification fails
+-- ============================================================
+
+-- Helper function to check if token has been set at all yet..
+local function checkToken(token)
+    if #token < 30 then
+        cecho("<orange>[ITEM DB] Warning: Token looks suspiciously short - might be invalid.\n")
+        return false
+    end
+
+    if itemdb.tokenVerified and token == itemdb.token then
+        cecho("<green>[ITEM DB] Token already verified.\n")
+        return true
+    end
+
+    itemdb.tokenVerified = false -- reset verified status until we verify the new token
+    itemdb.token = token -- setting token as valid and will revoke later if invalid
+
+    verifyToken(itemdb.token)
+end
 
 
 -- Give user their token if needed for debug / etc
 function itemdb.getToken()
     if not itemdb.token or itemdb.token == "" then
-        cecho("<gray>[ITEM-DB]: Token missing. Set it with: <white>itemdb.set YOUR_TOKEN\n")
+        cecho("<gray>[ITEM-DB]: Token missing. Set it with: <white>itemdb.setToken YOUR_TOKEN\n")
         cecho("<spring_green>Need one? ")
         cechoLink(
             "<light_cyan>Click here to get your token",
@@ -110,14 +122,19 @@ function itemdb.getToken()
         return nil
     end
 
+    if not itemdb.tokenVerified then
+        cecho("<gray>[ITEM-DB]: Token not verified yet. Please check your token & set it again.\n")
+        -- return nil 
+    end
+
     -- Show masked token
     local masked = string.rep("*", 8) .. string.sub(itemdb.token, -4)
     cecho("<spring_green>Token set: <white>" .. masked .. " <dim_grey>(last 4 visible)\n")
     return itemdb.token
 end
 
--- Set User Token
--- user token gets set, but revoked if the verification fails
+
+-- User sets their token, we check it and revoke if invalid. We also give user feedback on success / failure and next steps.
 function itemdb.setToken(token)
     if not token or token == "" then
         cecho("<red>[ITEM DB] ERROR: Authentication token is not set!\n")
@@ -126,6 +143,10 @@ function itemdb.setToken(token)
         return false
     end
 
-    itemdb.checkToken(token)
-
+    checkToken(token)
 end
+
+
+
+
+

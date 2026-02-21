@@ -1,4 +1,6 @@
-itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
+itemdb = itemdb or {}
+
+-- itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
 
 -- ------------------------------------------------------------
 -- CAPTURE STATE
@@ -172,52 +174,40 @@ function itemdb.inventory.endCapture()
     end
 end
 
--- ------------------------------------------------------------
--- setData
--- ------------------------------------------------------------
+
 function itemdb.inventory.setData(newData)
     itemdb.inventory.data = newData or {}
 
     itemdb.inventory.window.refresh()
 end
 
--- called when sysExitEvent
-function itemdb.inventory.save()
-    local savedata = {
-        inventory = itemdb.inventory.data or {},
-        token = itemdb.token or ""
-    }
-    cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
-    table.save(itemdb.savePath, savedata)
-end
-
--- called on sysLoadEvent and sysInstall, but will only run once
-function itemdb.inventory.initialize()
-    local savedata = {}
-    
-    -- Only attempt to load if the save file exists
-    local f = io.open(itemdb.savePath, "r")
-    if f then
-        io.close(f)
-        table.load(itemdb.savePath, savedata)
-    end
-
-    -- loading data from previous session
-    itemdb.inventory.data = savedata.inventory or {}
-    itemdb.token = savedata.token or ""
 
 
-    itemdb.inventory.window.initialize()
-    -- itemdb.inventory.window.refresh()
 
-    if itemdb.state.debugMode then
-        cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
-    end
-end
 
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysLoadEvent", "sysLoadEvent", itemdb.inventory.initialize)
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb.inventory.initialize)
-registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.inventory.save)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- ------------------------------------------------------------
 -- Inventory Window

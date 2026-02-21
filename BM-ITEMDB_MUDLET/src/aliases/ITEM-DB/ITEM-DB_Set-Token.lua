@@ -3,7 +3,7 @@ local token = matches[2] or ""
 token = token:gsub("^%s+", ""):gsub("%s+$", "")
 
 if token == "" then
-    cecho("<red>ITEM DB: token required. Usage: itemdb.set YOUR_TOKEN")
+    itemdb.sendStatusMessage("Token required. Usage: itemdb.setToken YOUR_TOKEN", "red")
     return
 end
 

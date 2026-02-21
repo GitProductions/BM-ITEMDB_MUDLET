@@ -200,5 +200,5 @@ function itemdb.inventory.window.initialize()
         ]]
     }, itemdb.inventory.window)
 
-    cecho("\nbutton made")
+ 
 end
