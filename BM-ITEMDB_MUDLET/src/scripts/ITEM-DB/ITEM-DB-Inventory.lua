@@ -1,7 +1,5 @@
 itemdb = itemdb or {}
 
--- itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
-
 -- ------------------------------------------------------------
 -- CAPTURE STATE
 -- Uses the setTriggerStayOpen pattern - single named trigger

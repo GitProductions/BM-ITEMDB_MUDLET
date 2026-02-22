@@ -148,7 +148,7 @@ function itemdb.ui.makeFooter(borderColor, boxWidth)
     makeFooter(borderColor, boxWidth)
 end
 
-local function showHelpMessage()
+function itemdb.help()
     makeHeader("Available Commands", "light_blue", "light_blue", "white", 80)
     cecho("<light_blue>┃\n")
 
@@ -246,7 +246,7 @@ function itemdb.showFirstTimeSetup()
     itemdb.tokenBootPrompted = true
 end
 
-function showStartupMessage()
+function itemdb.showStartupMessage()
     -- cecho("\n<spring_green>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
     makeHeader("Welcome Back!", "spring_green", "grey", "white")
     cecho("<spring_green>┃\n")
@@ -404,15 +404,22 @@ function itemdb.setUserOOC(msg)
 
 end
 
+
 function itemdb.debug()
     cecho("\n<yellow>[ITEMDB] <gray>- Debug mode is " .. (itemdb.state.debugMode and "<red>OFF" or "<green>ON") .. "\n")
     -- debug toggle
     itemdb.state.debugMode = not itemdb.state.debugMode
 end
 
-function itemdb.help()
-    showHelpMessage()
+
+function itemdb.resetState()
+    itemdb.state = defaultState
+    cecho("<yellow>[ITEMDB] <gray>- State reset to defaults.\n")
+
+    itemdb.save()
 end
+
+
 
 -- ============================================================
 -- WHEN USER IDENTIFIES AN ITEM - CAPTURE LINES, ASK TO SUBMIT, HANDLE SELECTION
@@ -495,6 +502,7 @@ function itemdb.finishIdentifyCapture()
     -- resetCaptureLines()
 end
 
+-- Prompt user to open inventory to finalize the identify submission process by selecting short name
 function itemdb.askUser()
     cecho("<yellow>[Item-DB]: <light_blue>Submit Item: ")
     cechoLink("<green><b>[ Open Inventory ]</b>", function()
@@ -738,7 +746,7 @@ local function handleStartupHandler(event, respUrl, body)
             if itemdb.state.freshStart then
                 itemdb.showFirstTimeSetup()
             else
-                showStartupMessage()
+                itemdb.showStartupMessage()
             end
 
         else
@@ -792,22 +800,15 @@ local function handleUninstallEvent(...)
     itemdb.tokenUninstallHandlerRegistered = false
 end
 
-function itemdb.resetState()
-    itemdb.state = defaultState
-    cecho("<yellow>[ITEMDB] <gray>- State reset to defaults.\n")
 
-    itemdb.save()
-end
 
 -- ============================================================
 -- REGISTER HANDLERS
 -- ============================================================
 
 -- ============================================================
--- INITIALIZE INVENTORY on sysLoadEvent and sysInstall
+-- INITIALIZE on sysLoadEvent and sysInstall
 -- ============================================================
-
--- manual save works.. but automatic save results in a fairly tempy list???
 
 -- called when sysExitEvent
 function itemdb.save()
@@ -850,16 +851,16 @@ registerNamedEventHandler("BM-ITEMDB", "itemdb.sysInstall", "sysInstall", itemdb
 registerNamedEventHandler("BM-ITEMDB", "itemdb.sysExitEvent", "sysExitEvent", itemdb.save)
 
 if not itemdb.tokenInstallHandlerRegistered then
-    registerNamedEventHandler("itemdb.token", "itemdbTokenInstall", "sysInstallPackage", handleInstallEvent)
+    registerNamedEventHandler("itemdb.installed", "itemdbInstall", "sysInstallPackage", handleInstallEvent)
     itemdb.tokenInstallHandlerRegistered = true
 end
 
 if not itemdb.tokenStartupHandlerRegistered then
-    registerNamedEventHandler("itemdb.token", "itemdbTokenStartup", "sysLoadEvent", handleStartupEvent)
+    registerNamedEventHandler("itemdb.startup", "itemdbStartup", "sysLoadEvent", handleStartupEvent)
     itemdb.tokenStartupHandlerRegistered = true
 end
 
 if not itemdb.tokenUninstallHandlerRegistered then
-    registerNamedEventHandler("itemdb.token", "itemdbTokenUninstall", "sysUninstall", handleUninstallEvent)
+    registerNamedEventHandler("itemdb.uninstalled", "itemdbUninstall", "sysUninstall", handleUninstallEvent)
     itemdb.tokenUninstallHandlerRegistered = true
 end
