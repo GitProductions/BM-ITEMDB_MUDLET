@@ -23,7 +23,7 @@ itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.configFile
 
 
 itemdb.update = itemdb.update or {}
-itemdb.version = "1.0.2"
+itemdb.version = "1.0.3"
 
 -- Handler registration flags (persisted to prevent double-registration)
 itemdb.tokenStartupHandlerRegistered = itemdb.tokenStartupHandlerRegistered or false
