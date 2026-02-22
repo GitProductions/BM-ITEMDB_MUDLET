@@ -154,7 +154,13 @@ function itemdb.submitCapturedItem(itemLine)
     postHTTP(body, itemdb.BASE_URL .. "/api/items", headers)
 
     -- assuring cleanup
-    resetCaptureLines()
-    itemdb.cancelItemSelection(true)
-    itemdb.inventory.window:hide()
+    itemdb.clearItemSelection(true)
+
+    -- check if itemdb.window.option is hide, or minimze...
+    if itemdb.state.windowAutoOption == "hide" then
+        itemdb.inventory.window:hide()
+    elseif itemdb.state.windowAutoOption == "minimize" then
+        itemdb.inventory.window:minimize()
+    end
+
 end

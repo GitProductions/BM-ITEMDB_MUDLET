@@ -13,10 +13,14 @@ itemdb.ui = itemdb.ui or {}
 -- our token gets verified too "late" causing the our welcome message to show improperly
 -- where it should wait a moment and it should be able to know its been online before
 
-itemdb.configFile = "bmud_itemdb.lua"
-itemdb.packageName = "BM-ITEMDB"
+-- itemdb.packageName = "BM-ITEMDB"  -- no longer being used.. we dont save in the packages folder to make sure it persists through reinstalls
+
+itemdb.configFile = "bmud_itemdb_config.lua"
 itemdb.packagePath = getMudletHomeDir()
-itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
+itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.configFile
+
+-- itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
+
 
 itemdb.update = itemdb.update or {}
 itemdb.version = "1.0.2"
@@ -41,6 +45,7 @@ local defaultState = {
     freshStart = true,
     debugMode = false,
     submissionTimeout = 20, -- seconds until we reset the item submission state in case something goes wrong and we don't get a response from the user or the ItemDB after submission
+    windowAutoOption = "hide", -- options: hide / minimize / none - automatically hides the window by default after submissions. hide 
 
     captureActive = false,
     captureLines = {},
@@ -55,8 +60,8 @@ local defaultState = {
 
 itemdb.state = itemdb.state or defaultState
 
--- itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
-itemdb.BASE_URL = "http://localhost:3000"
+itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
+-- itemdb.BASE_URL = "http://localhost:3000"
 
 -- ============================================================
 -- FOR DEVELOPMENT USE ONLY
@@ -423,7 +428,7 @@ end
 function itemdb.startIdentifyCapture()
     if itemdb.state.selectingInventoryItem then
         cecho("<yellow>[ITEMDB] <gray>- <orange>[New identify detected - cancelling previous submission]\n")
-        itemdb.cancelItemSelection(true)
+        itemdb.clearItemSelection(true)
     end
 
     itemdb.state.captureActive = true
@@ -499,8 +504,14 @@ function itemdb.askUser()
         itemdb.startItemSelection(itemdb.state.submissionTimeout)
         send("inv")
 
-        -- Showing the inventory window
-        itemdb.inventory.window:show()
+        -- Showing the inventory window + restoring just to make 100% sure its available for user
+        if itemdb.state.windowAutoOption == "hide" then
+            itemdb.inventory.window:show()
+            itemdb.inventory.window:restore()
+        elseif itemdb.state.windowAutoOption == "minimize" then
+            itemdb.inventory.window:show()
+            itemdb.inventory.window:restore()
+        end
 
     end, "[Item-DB]: Click to submit item", true)
 
@@ -508,7 +519,7 @@ function itemdb.askUser()
 
     cechoLink("<red><b>[ CANCEL ]</b>", function()
         cecho("<yellow>Item submission cancelled.\n")
-        itemdb.cancelItemSelection(true)
+        itemdb.clearItemSelection(true)
     end, "[Item-DB]: Cancel and discard this item", true)
     cecho("\n\n")
 end
@@ -525,12 +536,15 @@ function itemdb.startItemSelection(timeoutSeconds)
     itemdb.state.submitTimer = tempTimer(timeoutSeconds or 15, function()
         if itemdb.state.selectingInventoryItem then
             cecho("\n<yellow>[ITEMDB] - <red>[TIMEOUT] Item submission cancelled automatically.\n")
-            itemdb.cancelItemSelection(true)
+            itemdb.clearItemSelection(true)
         end
     end)
 end
 
-function itemdb.cancelItemSelection(clearCapture)
+
+-- this should be moved to inventory.. 
+-- but resetCaptureLines needs to go to..
+function itemdb.clearItemSelection(clearCapture)
     itemdb.state.selectingInventoryItem = false
 
     if itemdb.state.submitTimer then

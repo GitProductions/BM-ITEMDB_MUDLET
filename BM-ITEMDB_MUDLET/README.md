@@ -21,7 +21,7 @@ Sign up for an account you can then create an API token which can be used to set
 Once you acquire the token from the ItemDB you can hop in Mudlet and type in the command as seen below.
 Be sure you are replacing `<TOKEN>` with your actual token from the website.
 
-> `itemdb.set <TOKEN>`
+> `itemdb.setToken <TOKEN>`
 
 
 ### Whats next?
@@ -92,58 +92,3 @@ lua cecho(tostring(#itemdb.inventory.data))
 lua for i, row in ipairs(itemdb.inventory.rows) do cecho(i .. ": " .. row.name .. " visible=" .. tostring(row:isVisible()) .. "\n") end
 
 
-
-
-
--- saving a table 
-
-how bmudlet does it..
-configFile = BlackMUDlet_config.lua
-packageName = BlackMUDlet
-
-- saving to it like this..
-lua table.save(BlackMUDlet.packagePath .. BlackMUDlet.configFile, BlackMUDlet.Config)
-
-- we can overwrite it with ours..
-lua table.save(BlackMUDlet.packagePath .. BlackMUDlet.configFile, itemdb)
-
-
-- we copy exactly as bmudlet and make the same paths mimicing everything.. and we cannot make it save??
-unsure what stopping us..
-lua table.save(itemdb.packagePath .. itemdb.configFile, itemdb)
-
-we have for variables
-configFile = bmud_itemdb.lua
-packageName = BM-ITEMDB
-
-
-<!-- Need to figure out how to create a proper geyser window that can capture iventory data...
-
-
-inventory items dont seem to upadte properly when an item is removed.. 
-aka we have 6 items in list, one gets put away or dropped.. that item now has its named replaced with 'bag' or the last item inthe list instead of removing it all together...
-
-
-
-
-
-
-
-sample one liner works fine.. 
-
-and a fairly simple plain window works fine too..
-
-
-///
-
-
-
-- Added simple aliases for itemdb.help() and itemdb.checkToken() and update aliases.json to expose them. 
-- added an in-client help display (itemdb.help)
-- now hiding/showing during item selections
-- rename the inventory window and tidy its table formatting.
-- Improve token handling: parseJson now returns full data
-- token verification registers/cleans HTTP handlers to avoid duplicate calls.
-- stronger validation for empty/short tokens 
-
-Modified uninstall messaging with direct reinstall links

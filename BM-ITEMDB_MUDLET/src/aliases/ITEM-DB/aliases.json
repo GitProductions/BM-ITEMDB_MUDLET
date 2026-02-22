@@ -49,6 +49,13 @@
               "isFolder": "no"
        },
        {
+              "name": "ITEM-DB_WinAutoMode",
+              "isActive": "yes",
+              "regex": "(?i)^itemdb\\.winAutoMode(?:\\s+(.*))?$",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "ITEM-DB_Help",
               "isActive": "yes",
               "regex": "^itemdb$",
