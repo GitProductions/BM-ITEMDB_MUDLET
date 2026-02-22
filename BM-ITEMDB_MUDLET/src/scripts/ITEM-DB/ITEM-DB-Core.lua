@@ -131,7 +131,7 @@ end
 local function makeFooter(borderColor, boxWidth)
     borderColor = borderColor or "spring_green"
     boxWidth = boxWidth or 60
-    local line = string.rep("━", boxWidth + 4)
+    local line = string.rep("━", boxWidth -2)
     cecho("<" .. borderColor .. ">┗" .. line .. "┛\n\n")
 end
 

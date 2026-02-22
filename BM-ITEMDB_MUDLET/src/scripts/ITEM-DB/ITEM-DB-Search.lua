@@ -22,6 +22,9 @@ local function handleSearchSuccess(event, respUrl, body)
         return
     end
 
+    -- resetting current search url to prevent any stray responses from hitting this handler after this point
+    itemdb.state.searchCurrentUrl = nil
+
     local query = itemdb.state.searchCurrentQuery or "unknown"
     -- cecho(string.format("<spring_green>-------------------- Results for '%s' --------------------\n\n", query))
     itemdb.ui.makeHeader("Search Results for: " .. query, "spring_green", "spring_green", "white", 70)
@@ -106,6 +109,7 @@ local function handleSearchSuccess(event, respUrl, body)
     -- -- Now the popup link 
     -- cecho("<spring_green>Item URL: ")
     -- cechoPopup(displayText, popupCommands, popupHints, true) -- true = use current format/underline
+
 
 end
 
