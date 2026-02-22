@@ -28,6 +28,9 @@ itemdb.update = itemdb.update or {
     patchNotes = nil
 }
 
+-- Used to silence the verify message until startup complete.. - can later be replaced by just registering and raising an event possibly 
+itemdb.startupComplete = false
+
 -- Inventory Data 
 itemdb.inventory = {}
 
@@ -107,19 +110,22 @@ end
 -- ============================================================
 
 local function makeHeader(title, borderColor, titleBracketColor, titleTextColor, boxWidth)
-    borderColor = borderColor or "spring_green"
+    borderColor       = borderColor       or "spring_green"
     titleBracketColor = titleBracketColor or "orange_red"
-    titleTextColor = titleTextColor or "yellow"
-    boxWidth = boxWidth or 60
+    titleTextColor    = titleTextColor    or "yellow"
+    boxWidth          = boxWidth          or 60
 
-    local leftTag = "[ ItemDB ]"
+    local leftTag  = "[ ItemDB ]"
     local rightTag = "[ " .. title .. " ]"
-    local dashes = boxWidth - #leftTag - #rightTag
-    local middle = string.rep("━", math.max(dashes, 1))
+
+    -- ┏━ + leftTag + ━ + middle + ━ + rightTag + ━┓
+    -- that's 2 (┏━) + leftTag + 1 + middle + 1 + rightTag + 2 (━┓) = boxWidth
+    local fixed  = 2 + #leftTag + 1 + 1 + #rightTag + 2
+    local middle = string.rep("━", math.max(boxWidth - fixed, 1))
 
     cecho("\n<" .. borderColor .. ">┏━<" .. borderColor .. ">[ <white>ItemDB <" .. borderColor .. ">]<" ..
-              borderColor .. ">━" .. middle .. "━<" .. titleBracketColor .. ">[ <" .. titleTextColor .. ">" .. title ..
-              " <" .. titleBracketColor .. ">]<" .. borderColor .. ">━┓\n")
+        borderColor .. ">━" .. middle .. "━<" .. titleBracketColor .. ">[ <" .. titleTextColor .. ">" .. title ..
+        " <" .. titleBracketColor .. ">]<" .. borderColor .. ">━┓\n")
 end
 
 local function makeFooter(borderColor, boxWidth)
@@ -128,6 +134,61 @@ local function makeFooter(borderColor, boxWidth)
     local line = string.rep("━", boxWidth + 4)
     cecho("<" .. borderColor .. ">┗" .. line .. "┛\n\n")
 end
+
+
+function itemdb.ui.makeStatusFooter(borderColor, boxWidth)
+    borderColor = borderColor or "spring_green"
+    boxWidth    = boxWidth or 60
+    local labelColor = "white"
+
+    local innerWidth = boxWidth - 2
+    local divider    = string.rep("━", innerWidth)
+
+    local tokenStatus, tokenColor
+    if itemdb.state.tokenVerified then
+        tokenStatus = "Verified"
+        tokenColor  = "spring_green"
+    else
+        tokenStatus = "Not Verified"
+        tokenColor  = "yellow"
+    end
+
+    local updateStatus, updateColor
+    if itemdb.update.available then
+        updateStatus = "Available"
+        updateColor  = "yellow"
+    else
+        updateStatus = "Up to Date"
+        updateColor  = "spring_green"
+    end
+
+    local left  = " Token: " .. tokenStatus
+    local right = "Update: " .. updateStatus .. " "
+
+    local padding = innerWidth - #left - #right
+    local spacer  = string.rep(" ", math.max(1, padding))
+
+    cecho("<" .. borderColor .. ">┣" .. divider .. "┫\n")
+    cecho("<" .. borderColor .. ">┃")
+    cecho("<" .. labelColor .. "> Token: <" .. tokenColor .. ">" .. tokenStatus)
+    cecho("<white>" .. spacer)
+    cecho("<" .. labelColor .. ">Update: ")
+
+    if itemdb.update.available then
+        cechoLink(
+            "<" .. updateColor .. ">" .. "<u>" .. updateStatus .. "</u> ",
+            [[itemdb.showUpdateAvailable(itemdb.update.latestVersion, itemdb.version)]],
+            "Click to view update details",
+            true
+        )
+    else
+        cecho("<" .. updateColor .. ">" .. updateStatus .. " ")
+    end
+
+    cecho("<" .. borderColor .. ">┃\n")
+    cecho("<" .. borderColor .. ">┗" .. divider .. "┛\n")
+end
+
 
 function itemdb.ui.makeHeader(title, borderColor, titleBracketColor, titleTextColor, boxWidth)
     makeHeader(title, borderColor, titleBracketColor, titleTextColor, boxWidth)
@@ -200,6 +261,7 @@ end
 
 function itemdb.showFirstTimeSetup()
     makeHeader("First Time Setup", "spring_green", "spring_green", "white")
+
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <gold>BlackMUD ItemDB " .. tostring(itemdb.version or "?") ..
               " - First Time Setup<reset>\n")
@@ -224,43 +286,64 @@ function itemdb.showFirstTimeSetup()
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <light_blue>><white> Type <yellow>itemdb <white>for a list of commands.\n")
     cecho("<spring_green>┃\n")
-    if itemdb.update.available then
-        updateAvailableMessage("spring_green")
-    end
-    makeFooter("spring_green")
+
+    itemdb.ui.makeStatusFooter("spring_green", 60)
 
     itemdb.state.freshStart = false
 end
 
-local function updateAvailableMessage(borderColor)
-    cecho("<" .. borderColor .. ">┃\n")
-    cecho("<" .. borderColor .. ">┃ <yellow>Update available! <white>" .. tostring(itemdb.update.latestVersion) ..
-              " is available.\n")
 
-    cecho("<" .. borderColor .. ">┃")
-    cechoLink(" ► <dodger_blue><u>Download & Install", -- [[installPackage("https://bm-itemdb.gitago.dev/itemdb.mpackage")]],
-        [[installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")]],
-        "Click to automatically download and install the latest version", true)
 
-    cecho("\n<" .. borderColor .. ">┃\n")
-end
+
 
 function itemdb.showStartupMessage()
     -- cecho("\n<spring_green>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
-    makeHeader("Welcome Back!", "spring_green", "grey", "white")
+    itemdb.ui.makeHeader("Welcome Back!", "spring_green", "grey", "white", 60)
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <gold>BlackMUD ItemDB V" .. tostring(itemdb.version or "?") .. " - Ready<reset>\n")
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <white>Welcome back! Your token is active.\n")
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <light_blue>><white> Type <yellow>itemdb <white>for a list of commands.\n")
-    if itemdb.update.available then
-        cecho("<spring_green>┃\n")
-        cecho(
-            "<spring_green>┃ <dim_grey>──────────────────────────────────────────────────────────\n")
-        updateAvailableMessage("spring_green")
+    cecho("<spring_green>┃\n")
+
+    -- status footer includes the update status and if token is verified
+    itemdb.ui.makeStatusFooter("spring_green", 60)
+end
+
+
+-- Utilized for patchnotes to go thru each line and prefix or add space to better fit our patchnotes window
+local function echoBoxed(text, borderColor, textColor, boxWidth)
+    borderColor = borderColor or "spring_green"
+    textColor   = textColor   or "white"
+    boxWidth    = boxWidth    or 60
+
+    local innerWidth = boxWidth - 4 -- ┃ + space + text + space
+
+    -- wrap long lines
+    local function wrapLine(line, width)
+        local wrapped = {}
+        while #line > width do
+            local chunk = line:sub(1, width)
+            local breakAt = chunk:find("%s[%S]*$") -- break at last space
+            if breakAt and breakAt > 1 then
+                table.insert(wrapped, line:sub(1, breakAt - 1))
+                line = line:sub(breakAt + 1)
+            else
+                table.insert(wrapped, chunk)
+                line = line:sub(width + 1)
+            end
+        end
+        table.insert(wrapped, line)
+        return wrapped
     end
-    makeFooter("spring_green")
+
+    for rawLine in (text .. "\n"):gmatch("([^\n]*)\n") do
+        local lines = wrapLine(rawLine, innerWidth)
+        for _, line in ipairs(lines) do
+            cecho("<" .. borderColor .. ">  <" .. textColor .. ">" .. line .. "\n")
+        end
+    end
 end
 
 local function showPatchNotes()
@@ -268,87 +351,24 @@ local function showPatchNotes()
         -- cecho("\n<spring_green>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
         makeHeader("Latest Patch Notes", "spring_green", "yellow", "light_blue")
         cecho("<spring_green>┃\n")
-        cecho("<spring_green>┃ <yellow>[ITEMDB] <gray>- <light_blue>Latest Patch Notes:\n\n")
-        cecho("<white> ┃" .. itemdb.update.patchNotes .. "\n\n")
+        echoBoxed(itemdb.update.patchNotes, "spring_green", "white", 60)
+        cecho("<spring_green>┃\n")
         cecho("<spring_green>┃\n")
         makeFooter("spring_green")
     end
 end
 
-local function showUpdateAvailable(latestVersion, currentVersion)
-    makeHeader("Update Available", "spring_green", "spring_green", "white")
-    cecho("<spring_green>┃\n")
-    cecho("<spring_green>┃ <gold>Update Available!<reset>\n")
-    cecho("<spring_green>┃\n")
-    cecho("<spring_green>┃ <white>Your version:   <red>" .. currentVersion .. "<reset>\n")
-    cecho("<spring_green>┃ <white>Latest version: <green>" .. latestVersion .. "<reset>\n")
-    cecho("<spring_green>┃\n")
-    cecho("<spring_green>┃ <yellow>To update, click below or reinstall manually:\n")
-    cecho("<spring_green>┃\n")
-    cecho("<spring_green>┃  ")
-    echoLink("► Click here to install the latest update now!",
-        -- [[installPackage("https://bm-itemdb.gitago.dev/itemdb.mpackage")]],
-        [[installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")]],
-        "Click to automatically download and install the latest version", true)
-    cecho("\n<spring_green>┃\n")
-
-    cecho("<spring_green>┃  ")
-    cechoLink("<light_cyan>► View release notes here   ", showPatchNotes, "Click to view the latest patch notes", true)
-
-    cechoLink("    <light_cyan>► View release notes on GitHub",
-        [[openUrl("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest")]],
-        "Click to open the release page in your browser", true)
-
-    cecho("\n<spring_green>┃\n")
-    cecho("<spring_green>┃ <dim_grey>Mudlet will handle the install automatically.")
-    cecho("\n<spring_green>┃\n")
-    makeFooter("spring_green")
-end
-
-local function showTokenNotSet()
-    makeHeader("Token Not Set", "orange_red", "white", "orange_red")
-    cecho("<orange_red>┃\n")
-    cecho("<orange_red>┃ <red>[ERROR] <white>Token not set.\n")
-    cecho("<orange_red>┃\n")
-    cecho("<orange_red>┃ <white>Type <yellow>itemdb.setToken YOUR_TOKEN <white>to activate submissions.\n")
-    cecho("<orange_red>┃ <white>Type <yellow>itemdb <white>for a full list of commands.\n")
-    cecho("<orange_red>┃\n")
-    if itemdb.update.available then
-        cecho(
-            "<orange_red>┃ <dim_grey>──────────────────────────────────────────────────────────\n")
-        updateAvailableMessage("orange_red")
-    end
-    makeFooter("orange_red")
-end
-
--- now located in ITEM-DB-Startup.lua
--- local function showUninstallMessage(reinstallUrl)
-
-local function showPatchNotes()
-    if itemdb.update.patchNotes and itemdb.update.patchNotes ~= "" then
-        -- cecho("\n<spring_green>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
-        makeHeader("Latest Patch Notes", "spring_green", "spring_green", "light_blue")
-        cecho("<spring_green>┃\n")
-        cecho("<spring_green>┃ <yellow>[ITEMDB] <gray>- <light_blue>Latest Patch Notes:\n\n")
-        cecho("<white> ┃" .. itemdb.update.patchNotes .. "\n\n")
-        cecho("<spring_green>┃\n")
-        makeFooter("spring_green")
-    end
-end
-
-local function showUpdateAvailable(latestVersion, currentVersion)
+function itemdb.showUpdateAvailable(latestVersion, currentVersion)
     -- cecho("\n<spring_green>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n")
-    makeHeader("Update Available", "spring_green", "green", "green")
+    itemdb.ui.makeHeader("Update Available", "spring_green", "green", "white")
     cecho("<spring_green>┃\n")
-    cecho("<spring_green>┃ <gold>BlackMUD ItemDB - Update Available!<reset>\n")
-    cecho("<spring_green>┃\n")
-    cecho("<spring_green>┃ <white>Your version:   <red>" .. currentVersion .. "<reset>\n")
+    cecho("<spring_green>┃ <white>Your version:   <red>v" .. currentVersion .. "<reset>\n")
     cecho("<spring_green>┃ <white>Latest version: <green>" .. latestVersion .. "<reset>\n")
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃ <yellow>To update, click below or reinstall manually:\n")
     cecho("<spring_green>┃\n")
     cecho("<spring_green>┃  ")
-    echoLink("► Click here to install the latest update now!",
+    cechoLink("► Click <royal_blue><u>here</u><reset> to install the latest update now!",
         [[installPackage("https://bm-itemdb.gitago.dev/itemdb.mpackage")]],
         "Click to automatically download and install the latest version", true)
     cecho("\n<spring_green>┃\n")
@@ -363,8 +383,11 @@ local function showUpdateAvailable(latestVersion, currentVersion)
     cecho("\n<spring_green>┃\n")
     cecho("<spring_green>┃ <dim_grey>Mudlet will handle the install automatically.")
     cecho("\n<spring_green>┃\n")
-    makeFooter("spring_green")
+    itemdb.ui.makeFooter("spring_green")
 end
+
+
+
 
 -- ============================================================
 -- WHEN USER IDENTIFIES AN ITEM - CAPTURE LINES, ASK TO SUBMIT, HANDLE SELECTION
@@ -512,39 +535,3 @@ function itemdb.clearItemSelection(clearCapture)
         resetCaptureLines()
     end
 end
-
--- called when sysExitEvent
--- function itemdb.save()
---     local savedata = {
---         inventory = itemdb.inventory.data or {},
---         token = itemdb.token or "Where did my token go?!",
-
---         -- We save entire state object
---         state = itemdb.state or {"None"}
---     }
---     cecho("<yellow>Saving to " .. itemdb.savePath .. "\n")
---     table.save(itemdb.savePath, savedata)
--- end
-
--- function itemdb.load()
---     local savedata = {}
-
---     -- Only attempt to load if the save file exists
---     local f = io.open(itemdb.savePath, "r")
---     if f then
---         io.close(f)
---         table.load(itemdb.savePath, savedata)
---     end
-
---     -- loading data from previous session
---     itemdb.inventory.data = savedata.inventory or {}
---     itemdb.token = savedata.token or ""
---     itemdb.state = savedata.state or itemdb.defaultState
-
---     itemdb.inventory.window.initialize()
---     -- itemdb.inventory.window.refresh()
-
---     if itemdb.state.debugMode then
---         cecho("<yellow>Inventory data loaded.\n" .. tostring(#itemdb.inventory.data) .. " items.\n")
---     end
--- end

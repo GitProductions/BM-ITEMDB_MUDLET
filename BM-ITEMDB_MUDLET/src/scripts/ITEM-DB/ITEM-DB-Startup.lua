@@ -1,8 +1,6 @@
 -- ============================================================
 -- STARTUP FLOW
 -- ============================================================
-
-
 local function versionToNum(v)
     local a, b, c = v:match("(%d+)%.(%d+)%.(%d+)")
     if not a then
@@ -24,6 +22,33 @@ local function hasMpackageAsset(assets)
 end
 
 
+
+local function updateAvailableMessage(borderColor)
+    cecho("<" .. borderColor .. ">┃\n")
+    cecho("<" .. borderColor .. ">┃ <yellow>Update available! <white>" .. tostring(itemdb.update.latestVersion) ..
+              " is available.\n")
+
+    cecho("<" .. borderColor .. ">┃")
+    cechoLink(" ► <dodger_blue><u>Download & Install", -- [[installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")]],
+        [[installPackage("https://bm-itemdb.gitago.dev/itemdb.mpackage")]],
+        "Click to automatically download and install the latest version", true)
+
+    cecho("\n<" .. borderColor .. ">┃\n")
+end
+
+local function showTokenNotSet()
+    itemdb.ui.makeHeader("Token Not Set", "orange_red", "white", "orange_red")
+    cecho("<orange_red>┃\n")
+    cecho("<orange_red>┃ <red>[ERROR] <white>Token not set.\n")
+    cecho("<orange_red>┃\n")
+    cecho("<orange_red>┃ <white>Type <yellow>itemdb.setToken YOUR_TOKEN <white>to activate submissions.\n")
+    cecho("<orange_red>┃ <white>Type <yellow>itemdb <white>for a full list of commands.\n")
+    cecho("<orange_red>┃\n")
+
+    itemdb.ui.makeStatusFooter("orange_red")
+end
+
+
 local function handleStartupHandler(event, respUrl, body)
     if respUrl ~= "https://api.github.com/repos/GitProductions/BM-ITEMDB_MUDLET/releases/latest" then
         cecho("<yellow>[ITEMDB] <gray>- <red>Unexpected HTTP response during startup: " .. tostring(respUrl) .. "\n")
@@ -41,11 +66,13 @@ local function handleStartupHandler(event, respUrl, body)
         itemdb.update.patchNotes = data.body or ""
     end
 
+    -- Verifying the users token
+    itemdb.verifyUserToken(itemdb.token)
     -- we have a reace condition against checking for the actual token, waiting for response and then showing startup message...
 
     -- Now show the appropriate message with update info baked in
     tempTimer(3, function()
-        if not itemdb.tokenVerified then
+        if itemdb.tokenVerified then
 
             if itemdb.state.freshStart then
                 itemdb.showFirstTimeSetup()
@@ -55,11 +82,10 @@ local function handleStartupHandler(event, respUrl, body)
 
         else
             showTokenNotSet()
-            if itemdb.update.available then
-                showUpdateAvailable(itemdb.update.latestVersion, itemdb.version)
-            end
-
         end
+
+        -- Startup Complete - allowing token verified messages to show after this point
+        itemdb.startupComplete = true
     end)
 
 end
@@ -75,8 +101,6 @@ local function runStartupFlow()
     -- Kick off the startup flow by checking for latest release
     getHTTP("https://api.github.com/repos/GitProductions/BM-ITEMDB_MUDLET/releases/latest")
 end
-
-
 
 -- ============================================================
 -- EVENT HANDLERS
@@ -101,7 +125,6 @@ local function showUninstallMessage(reinstallUrl)
     itemdb.ui.makeFooter("spring_green")
 end
 
-
 local function handleInstallEvent(...)
     itemdb.sendStatusMessage("Installing BlackMUD ItemDB Helper", "gold")
 
@@ -121,15 +144,10 @@ local function handleUninstallEvent(...)
     -- itemdb.tokenStartupHandlerRegistered = false
     -- itemdb.tokenInstallHandlerRegistered = false
     -- itemdb.tokenUninstallHandlerRegistered = false
-   
+
     local reinstallUrl = "https://bm-itemdb.gitago.dev/itemdb.mpackage"
     showUninstallMessage(reinstallUrl)
 end
-
-
-
-
-
 
 -- ============================================================
 -- REGISTRATION

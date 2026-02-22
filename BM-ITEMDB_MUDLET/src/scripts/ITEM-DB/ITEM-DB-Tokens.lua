@@ -38,7 +38,11 @@ local function handleVerifySuccess(_, url, body)
 
     -- If its a token response, it will have data.message 
     if data and data.message == "valid" then
-        itemdb.sendStatusMessage("Token Verified Successfully!", "spring_green")
+
+        -- Only displaying token verified AFTER startup complete, to prevent excess messages during startup flow
+        if itemdb.startupComplete then
+            itemdb.sendStatusMessage("Token Verified Successfully!", "spring_green")
+        end
 
         itemdb.tokenVerified = true
     end
