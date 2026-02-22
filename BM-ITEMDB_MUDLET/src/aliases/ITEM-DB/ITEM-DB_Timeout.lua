@@ -8,5 +8,5 @@ if timeoutSeconds == "" then
 end
 
 itemdb.state.submissionTimeout = tonumber(timeoutSeconds)
-itemdb.sendStatusMessage("Timeout seconds set to [<green>" .. timeoutSeconds .. "</green>] seconds", "spring_green")
+itemdb.sendStatusMessage("Timeout seconds set to [<green>" .. timeoutSeconds .. "] seconds", "spring_green")
 -- itemdb.setTimeoutSeconds(timeoutSeconds)

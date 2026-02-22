@@ -1,5 +1,4 @@
 ------------- Item Submission Function & Handlers  ------------
-
 local function handleSubmitError(event, errMsg, respUrl)
 
     cecho("<yellow>[ITEMDB] <gray>- <red>Submission failed: " .. (errMsg or "unknown") .. "\n")
@@ -20,22 +19,16 @@ local function handleSubmitSuccess(event, respUrl, body)
     end
 
     -- default title is success, but could be a "Item Submission DUPLICATE!"
-    local title = "Submission: Success!" 
+    local title = "Submission: Success!"
     local description = "New item submitted! Here's your links:"
 
     local itemURL = data.itemUrls and data.itemUrls[1] or "unknown"
     local submissionURL = data.submissionUrls and data.submissionUrls[1] or "unknown"
 
-
     -- If the item is duplicate, then we need to adjust our messaging and links accordingly
-    local isDuplicate = data.duplicateOf 
-        and type(data.duplicateOf) == "table" 
-        and data.duplicateOf[1] 
-        and type(data.duplicateOf[1]) == "string" 
-        and data.duplicateOf[1] ~= ""
-        and data.duplicateOf[1] ~= "null"   -- extra safety if server ever sends string "null"
-
-            
+    local isDuplicate = data.duplicateOf and type(data.duplicateOf) == "table" and data.duplicateOf[1] and
+                            type(data.duplicateOf[1]) == "string" and data.duplicateOf[1] ~= "" and data.duplicateOf[1] ~=
+                            "null" -- extra safety if server ever sends string "null"
 
     if itemdb.state.debugMode then
         cecho("Our submissionURL is: " .. submissionURL .. "\n")
@@ -58,7 +51,7 @@ local function handleSubmitSuccess(event, respUrl, body)
     cecho("<spring_green>┃ <light_blue>Item URL: <light_cyan>" .. itemURL .. "\n")
     cecho("<spring_green>┃ <light_blue>Submission URL: <light_cyan>" .. submissionURL .. "\n")
     cecho("<spring_green>┃\n")
-    
+
     -- Button row
     cecho("<spring_green>┃ ")
 
@@ -67,7 +60,27 @@ local function handleSubmitSuccess(event, respUrl, body)
         openUrl(submissionURL)
     end, "Open this item in your web browser", true)
 
+    -- if the userOOCPrefix contains {item} we replace that with the actual items NAME, otherwise we just append the URL to the end of the message
+    -- and if its {itemURL} we replace that with the actual URL, this allows for more dynamic messaging if users want to share in OOC automatically after submission
+    -- local oocMessage = itemdb.state.userOOCPrefix or ""
+    -- -- item name we will split from the itemURL by pulling the last / segment and then splitting by - and capitalizing each word, this is a bit hacky but it allows us to avoid having to send the item name from the server in the response which would require more changes on the backend
+    -- local itemNameFromURL = itemURL:match("/items/%w+/(.+)$") or "an item"
+    -- itemNameFromURL = itemNameFromURL:gsub("-", " "):gsub("(%a)(%w*)", function(first, rest) return first:upper() .. rest:lower() end) -- capitalize each word
+    -- if oocMessage:find("{item}") then
+    --     oocMessage = oocMessage:gsub("{item}", data.name or itemNameFromURL)
+    -- end
+
+    -- if oocMessage:find("{itemURL}") then
+    --     oocMessage = oocMessage:gsub("{itemURL}", submissionURL)
+    -- else
+    --     oocMessage = oocMessage .. " " .. submissionURL
+    -- end
+
     -- Share in OOC button
+    -- cechoLink("<light_blue>[<wheat> Share in OOC <light_blue>]  ", function()
+    --     send('ooc ' .. oocMessage)
+    -- end, "Send this link to the OOC channel", true)
+
     cechoLink("<light_blue>[<wheat> Share in OOC <light_blue>]  ", function()
         send('ooc ' .. itemdb.state.userOOCPrefix .. ' ' .. submissionURL)
     end, "Send this link to the OOC channel", true)

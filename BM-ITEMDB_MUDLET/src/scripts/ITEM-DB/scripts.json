@@ -1,5 +1,17 @@
 [
        {
+              "name": "ITEM-DB-Util",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB-Startup",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "ITEM-DB-Tokens",
               "isActive": "yes",
               "script": "",
@@ -7,6 +19,12 @@
        },
        {
               "name": "ITEM-DB-Core",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ITEM-DB-Search",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
@@ -24,13 +42,13 @@
               "isFolder": "no"
        },
        {
-              "name": "BM-ITEMDB_MUDLET",
+              "name": "ITEM-DB-Submit",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "ITEM-DB-Submit",
+              "name": "BM-ITEMDB_MUDLET",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
