@@ -49,7 +49,6 @@ local function handleVerifySuccess(_, url, body)
 
     if data and data.message == "invalid" then
             itemdb.sendStatusMessage("Token Invalid!", "orange_red")
-
             itemdb.tokenVerified = false
             itemdb.token = nil
     end

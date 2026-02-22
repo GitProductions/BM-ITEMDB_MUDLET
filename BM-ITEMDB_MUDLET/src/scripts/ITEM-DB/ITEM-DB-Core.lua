@@ -5,9 +5,9 @@
 -- Item DB - Core helpers and shared state
 -- ============================================================
 itemdb = itemdb or {}
-itemdb.version = "1.0.1"
--- itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
-itemdb.BASE_URL = "http://localhost:3000"
+itemdb.version = "1.0.3"
+itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
+-- itemdb.BASE_URL = "http://localhost:3000"
 
 -- users token for submissions
 itemdb.token = itemdb.token or ""
@@ -145,7 +145,7 @@ function itemdb.ui.makeStatusFooter(borderColor, boxWidth)
     local divider    = string.rep("━", innerWidth)
 
     local tokenStatus, tokenColor
-    if itemdb.state.tokenVerified then
+    if itemdb.tokenVerified then
         tokenStatus = "Verified"
         tokenColor  = "spring_green"
     else
