@@ -5,38 +5,31 @@
 -- Item DB - Core helpers and shared state
 -- ============================================================
 itemdb = itemdb or {}
-itemdb.token = itemdb.token or "FRESH INSTALL"
+itemdb.version = "1.0.1"
+-- itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
+itemdb.BASE_URL = "http://localhost:3000"
+
+-- users token for submissions
+itemdb.token = itemdb.token or ""
 itemdb.tokenVerified = itemdb.tokenVerified or false
+
+--  Save Paths  - DB-Util.lua
+local configFile = "bmud_itemdb_config.lua"
+local packagePath = getMudletHomeDir()
+itemdb.savePath = packagePath .. "/" .. configFile
+
+-- for makeHeader & makeFooter and other UI facing message prompts later
 itemdb.ui = itemdb.ui or {}
 
--- our token gets verified too "late" causing the our welcome message to show improperly
--- where it should wait a moment and it should be able to know its been online before
-
--- itemdb.packageName = "BM-ITEMDB"  -- no longer being used.. we dont save in the packages folder to make sure it persists through reinstalls
-
-itemdb.configFile = "bmud_itemdb_config.lua"
-itemdb.packagePath = getMudletHomeDir()
-itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.configFile
-
--- itemdb.savePath = itemdb.packagePath .. "/" .. itemdb.packageName .. "/" .. itemdb.configFile
-
-itemdb.update = itemdb.update or {}
-itemdb.version = "1.0.1"
-
--- Handler registration flags (persisted to prevent double-registration)
--- itemdb.tokenStartupHandlerRegistered = itemdb.tokenStartupHandlerRegistered or false
--- itemdb.tokenInstallHandlerRegistered = itemdb.tokenInstallHandlerRegistered or false
--- itemdb.tokenUninstallHandlerRegistered = itemdb.tokenUninstallHandlerRegistered or false
-
--- Session-only flags (always reset on load)
-itemdb.tokenBootPrompted = false
-
-itemdb.inventory = {
-    name = "Open Inventory....",
-    condition = "",
-    quantity = 1,
-    desc = nil
+-- Item-DB-Startup
+itemdb.update = itemdb.update or {
+    available = false,
+    latestVersion = nil,
+    patchNotes = nil
 }
+
+-- Inventory Data 
+itemdb.inventory = {}
 
 itemdb.defaultState = {
     userOOCPrefix = "New Item Submitted:",
@@ -57,9 +50,6 @@ itemdb.defaultState = {
 }
 
 itemdb.state = itemdb.state or itemdb.defaultState
-
-itemdb.BASE_URL = "https://bm-itemdb.gitago.dev"
--- itemdb.BASE_URL = "http://localhost:3000"
 
 -- ============================================================
 -- FOR DEVELOPMENT USE ONLY
@@ -145,7 +135,6 @@ end
 function itemdb.ui.makeFooter(borderColor, boxWidth)
     makeFooter(borderColor, boxWidth)
 end
-
 
 -- We should rename all functions that show messages to be under itemdb.ui.<function> and move them to a UI file?
 function itemdb.help()
@@ -241,7 +230,6 @@ function itemdb.showFirstTimeSetup()
     makeFooter("spring_green")
 
     itemdb.state.freshStart = false
-    itemdb.tokenBootPrompted = true
 end
 
 local function updateAvailableMessage(borderColor)
@@ -251,7 +239,7 @@ local function updateAvailableMessage(borderColor)
 
     cecho("<" .. borderColor .. ">┃")
     cechoLink(" ► <dodger_blue><u>Download & Install", -- [[installPackage("https://bm-itemdb.gitago.dev/itemdb.mpackage")]],
-    [[installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")]],
+        [[installPackage("https://github.com/GitProductions/BM-ITEMDB_MUDLET/releases/latest/download/BM-ITEMDB.mpackage")]],
         "Click to automatically download and install the latest version", true)
 
     cecho("\n<" .. borderColor .. ">┃\n")
@@ -335,7 +323,6 @@ end
 
 -- now located in ITEM-DB-Startup.lua
 -- local function showUninstallMessage(reinstallUrl)
-
 
 local function showPatchNotes()
     if itemdb.update.patchNotes and itemdb.update.patchNotes ~= "" then
@@ -460,6 +447,16 @@ function itemdb.finishIdentifyCapture()
     -- resetCaptureLines()
 end
 
+function itemdb.ui.showWindow()
+    if itemdb.state.windowAutoOption == "hide" then
+        itemdb.inventory.window:show()
+        itemdb.inventory.window:restore()
+    elseif itemdb.state.windowAutoOption == "minimize" then
+        itemdb.inventory.window:show()
+        itemdb.inventory.window:restore()
+    end
+end
+
 -- Prompt user to open inventory to finalize the identify submission process by selecting short name
 function itemdb.askUser()
     cecho("<yellow>[Item-DB]: <light_blue>Submit Item: ")
@@ -471,13 +468,7 @@ function itemdb.askUser()
         send("inv")
 
         -- Showing the inventory window + restoring just to make 100% sure its available for user
-        if itemdb.state.windowAutoOption == "hide" then
-            itemdb.inventory.window:show()
-            itemdb.inventory.window:restore()
-        elseif itemdb.state.windowAutoOption == "minimize" then
-            itemdb.inventory.window:show()
-            itemdb.inventory.window:restore()
-        end
+        itemdb.ui.showWindow()
 
     end, "[Item-DB]: Click to submit item", true)
 
@@ -521,10 +512,6 @@ function itemdb.clearItemSelection(clearCapture)
         resetCaptureLines()
     end
 end
-
-
-
-
 
 -- called when sysExitEvent
 -- function itemdb.save()

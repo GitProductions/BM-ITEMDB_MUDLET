@@ -200,5 +200,13 @@ function itemdb.inventory.window.initialize()
         ]]
     }, itemdb.inventory.window)
 
+
+
+    -- set a 60 second timeout that removes the labels by default
+    tempTimer(60, function()
+        pcall(function() deleteLabel("itemdb.inventory.window.setupMessage") end)
+        pcall(function() deleteLabel("itemdb.inventory.window.setupClose") end)
+    end)
+
  
 end

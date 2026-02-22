@@ -56,7 +56,7 @@ local function handleVerifyError(_, url, errorMsg)
     cecho("<gray>[ITEM-DB]:<red> ItemDB may be down, please check and report to Gitago if issue persists " .. errorMsg .. "\n")
 end
 
-local function verifyToken(token)
+function itemdb.verifyUserToken(token)
     -- Making Post request to ItemDB to verify user token
 
     if itemdb.state.debugMode then
@@ -103,7 +103,7 @@ local function checkToken(token)
     itemdb.tokenVerified = false -- reset verified status until we verify the new token
     itemdb.token = token -- setting token as valid and will revoke later if invalid
 
-    verifyToken(itemdb.token)
+    itemdb.verifyUserToken(itemdb.token)
 end
 
 

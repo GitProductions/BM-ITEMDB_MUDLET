@@ -16,7 +16,7 @@
        {
               "name": "ITEM-DB_Check-Token",
               "isActive": "yes",
-              "regex": "^itemdb.show$",
+              "regex": "(?i)^itemdb.showToken$",
               "script": "",
               "isFolder": "no"
        },
@@ -30,14 +30,14 @@
        {
               "name": "ITEM-DB_Help",
               "isActive": "yes",
-              "regex": "^itemdb$",
+              "regex": "(?i)^itemdb$",
               "script": "",
               "isFolder": "no"
        },
        {
               "name": "ITEM-DB_Debug-Mode",
               "isActive": "yes",
-              "regex": "^itemdb.debug$",
+              "regex": "(?i)^itemdb.debug$",
               "script": "",
               "isFolder": "no"
        },
@@ -48,6 +48,14 @@
               "script": "",
               "isFolder": "no"
        },
+       {
+              "name": "ITEM-DB_Show-Window",
+              "isActive": "yes",
+              "regex": "(?i)^itemdb.showWindow$",
+              "script": "",
+              "isFolder": "no"
+       },
+
        {
               "name": "ITEM-DB_WinAutoMode",
               "isActive": "yes",
